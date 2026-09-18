@@ -1,0 +1,49 @@
+import { useMemo } from 'react'
+import { INDUSTRIAL_CLASSES, sites as allSites, unmapped as allUnmapped, withinWindow } from '@/lib/data'
+import { useFilters } from '@/store/useFilters'
+import { useSettings } from '@/store/useSettings'
+
+/**
+ * CPCB sees the industrial branch only (section 13). Every page on this role reads its rows
+ * from here so the filter bar, the map and the tables can never disagree.
+ */
+export function useCpcbSites() {
+  const classes = useFilters((s) => s.classes)
+  const state = useFilters((s) => s.state)
+  const behaviour = useFilters((s) => s.behaviour)
+  const window = useFilters((s) => s.window)
+
+  const industrial = useMemo(() => allSites.filter((s) => INDUSTRIAL_CLASSES.includes(s.class)), [])
+
+  const filtered = useMemo(
+    () =>
+      industrial.filter((s) => {
+        if (classes && classes.length > 0 && !classes.includes(s.class)) return false
+        if (state && s.state !== state) return false
+        if (behaviour !== 'all' && s.behaviour !== behaviour) return false
+        if (window !== 'all' && !withinWindow(s.lastDetection, window)) return false
+        return true
+      }),
+    [industrial, classes, state, behaviour, window],
+  )
+
+  const states = useMemo(() => [...new Set(industrial.map((s) => s.state))].sort(), [industrial])
+
+  return { industrial, filtered, states }
+}
+
+/** The unmapped queue, gated by the coverage-quality floor set in Settings. */
+export function useUnmappedQueue() {
+  const minCoverage = useSettings((s) => s.minCoverageQuality)
+  const state = useFilters((s) => s.state)
+
+  return useMemo(
+    () =>
+      allUnmapped.filter((u) => {
+        if (u.coverageQualityScore < minCoverage) return false
+        if (state && u.state !== state) return false
+        return true
+      }),
+    [minCoverage, state],
+  )
+}
