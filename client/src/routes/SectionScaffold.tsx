@@ -9,10 +9,12 @@ import { CoverageCaveat, RankedQueue } from '@/components/panels/RankedQueue'
 import { DistributionDonut } from '@/components/panels/DistributionDonut'
 import { CoverageAudit } from '@/components/panels/CoverageAudit'
 import { AlertStream } from '@/components/panels/AlertStream'
+import { SiteCard } from '@/components/panels/SiteCard'
+import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import type { Role } from '@/lib/roles'
-import { alerts as allAlerts, sites as allSites, unmapped } from '@/lib/data'
+import { alerts as allAlerts, sites as allSites, siteById, unmapped } from '@/lib/data'
 import { CLASS_COLOR } from '@/lib/thermal'
 import { istClock, istDate, nf } from '@/lib/format'
 import { useFilters } from '@/store/useFilters'
@@ -37,6 +39,8 @@ export function SectionScaffold({
   const selectSite = useFilters((s) => s.selectSite)
   const selectUnmapped = useFilters((s) => s.selectUnmapped)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
+  const openDetail = useFilters((s) => s.openDetail)
+  const selected = siteById(selectedSiteId)
 
   const sites = useMemo(
     () => (role.classFilter === 'all' ? allSites : allSites.filter((s) => role.classFilter.includes(s.class))),
@@ -126,11 +130,11 @@ export function SectionScaffold({
       <ThermalMap role={role} sites={sites} className="min-h-[460px]" />
 
       <div className="grid gap-3 xl:grid-cols-[1.4fr_1fr]">
-        <Panel title="Sites" subtitle="Select a row to open the site and fly the map to it">
+        <Panel title="Sites" subtitle="Select a row to fly the map and fill the card beside it">
           <SiteTable
             sites={sites}
             columns={['name', 'state', 'tHot', 'frpMean', 'persistence', 'status']}
-            maxRows={12}
+            maxHeight={420}
             selectedId={selectedSiteId}
             onRowClick={(site) => {
               selectSite(site.id)
@@ -140,6 +144,16 @@ export function SectionScaffold({
         </Panel>
 
         <div className="flex flex-col gap-3">
+          <Panel title="Selected site">
+            {selected ? (
+              <SiteCard site={selected} onOpenDetail={openDetail} />
+            ) : (
+              <EmptyState
+                title="Nothing selected yet"
+                body="Click a point on the map or a row in the table to see its readings."
+              />
+            )}
+          </Panel>
           <Panel title="Classes in view">
             <DistributionDonut slices={classSlices} centerLabel="sites" centerValue={nf(sites.length)} />
           </Panel>
@@ -161,7 +175,8 @@ export function SectionScaffold({
         <div className="mt-3">
           <RankedQueue
             rows={unmapped}
-            limit={6}
+            limit={8}
+            maxHeight={300}
             onSelect={(row) => {
               selectUnmapped(row.id)
               logLine(role.id, `Selected unmapped candidate #${row.rank} — ${row.state}`)

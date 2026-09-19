@@ -59,9 +59,9 @@ export function CoverageAudit({ height = 260 }: { height?: number }) {
         </BarChart>
       </ResponsiveContainer>
 
-      <div className="mt-3 overflow-x-auto">
+      <div className="panel-scroll mt-3 max-h-[320px] overflow-auto overscroll-contain">
         <table className="w-full min-w-[420px] text-[12px]">
-          <thead className="text-ink-faint border-line border-b text-[10.5px] tracking-wide">
+          <thead className="text-ink-faint sticky top-0 z-10 text-[10.5px] tracking-wide [&_th]:bg-card [&_th]:border-line [&_th]:border-b">
             <tr>
               <th className="py-1.5 pr-3 text-left font-normal">Facility class</th>
               <th className="px-3 py-1.5 text-right font-normal last:pr-0">OSM features</th>

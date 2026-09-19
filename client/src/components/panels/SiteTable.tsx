@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { ThermalSite } from '@/lib/types'
 import { CLASS_COLOR, tHotColor } from '@/lib/thermal'
-import { coord, days, kelvin, megawatt, nf, shortDate } from '@/lib/format'
+import { coord, days, megawatt, nf, shortDate } from '@/lib/format'
+import { formatTemp, useSettings } from '@/store/useSettings'
 import { cn } from '@/lib/utils'
 import { EmptyState } from './EmptyState'
 
@@ -72,7 +73,7 @@ const COLUMNS: Record<ColumnId, Column> = {
     label: 'T_hot',
     align: 'right',
     sort: (s) => s.tHot ?? 0,
-    render: (s) => <span style={{ color: tHotColor(s.tHot) }}>{kelvin(s.tHot)}</span>,
+    render: (s) => <TempCell kelvin={s.tHot} />,
   },
   deltaT: { id: 'deltaT', label: 'ΔT', align: 'right', sort: (s) => s.deltaT ?? 0, render: (s) => `${s.deltaT ?? '—'} K` },
   frpMean: { id: 'frpMean', label: 'Mean FRP', align: 'right', sort: (s) => s.frpMean, render: (s) => megawatt(s.frpMean) },
@@ -164,6 +165,12 @@ const COLUMNS: Record<ColumnId, Column> = {
   },
 }
 
+/** Temperature follows the unit chosen in Settings; the colour always follows the ramp. */
+function TempCell({ kelvin }: { kelvin: number | null }) {
+  const units = useSettings((s) => s.units)
+  return <span style={{ color: tHotColor(kelvin) }}>{formatTemp(kelvin, units)}</span>
+}
+
 /** Dense, hairline-ruled, sortable. No zebra striping and no per-row hover lift. */
 export function SiteTable({
   sites,
@@ -171,6 +178,8 @@ export function SiteTable({
   onRowClick,
   selectedId,
   maxRows,
+  maxHeight = 360,
+  fill = false,
   emptyTitle = 'No sites match these filters',
   emptyBody = 'Widen the time window or clear a class filter to bring sites back.',
 }: {
@@ -179,6 +188,11 @@ export function SiteTable({
   onRowClick?: (site: ThermalSite) => void
   selectedId?: string | null
   maxRows?: number
+  /** Body height in px before the table scrolls inside itself. */
+  maxHeight?: number
+  /** Take the panel's remaining height instead of a fixed one, so a tall neighbouring
+   *  column does not leave dead space under the table. */
+  fill?: boolean
   emptyTitle?: string
   emptyBody?: string
 }) {
@@ -199,10 +213,13 @@ export function SiteTable({
   if (sites.length === 0) return <EmptyState title={emptyTitle} body={emptyBody} />
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className={cn('panel-scroll overflow-auto overscroll-contain', fill && 'h-full min-h-[260px] flex-1')}
+      style={fill ? undefined : { maxHeight }}
+    >
       <table className="w-full min-w-[560px] text-[12.5px]">
-        <thead>
-          <tr className="border-line text-ink-faint border-b">
+        <thead className="sticky top-0 z-10">
+          <tr className="text-ink-faint">
             {columns.map((id) => {
               const col = COLUMNS[id]
               const active = sortBy === id
@@ -211,7 +228,7 @@ export function SiteTable({
                   key={id}
                   scope="col"
                   className={cn(
-                    'px-3 py-2 font-normal first:pl-0 last:pr-0',
+                    'bg-card border-line sticky top-0 border-b px-3 py-2 font-normal first:pl-0 last:pr-0',
                     col.align === 'right' ? 'text-right' : 'text-left',
                   )}
                 >

@@ -18,12 +18,18 @@ export function AlertStream({
   selectedId,
   onAcknowledge,
   limit,
+  maxHeight = 360,
+  fill = false,
 }: {
   alerts: Alert[]
   onSelect?: (alert: Alert) => void
   selectedId?: string | null
   onAcknowledge?: (alert: Alert) => void
   limit?: number
+  /** Body height in px before the stream scrolls inside itself. */
+  maxHeight?: number
+  /** Take the panel's remaining height instead of a fixed one. */
+  fill?: boolean
 }) {
   const rows = limit ? alerts.slice(0, limit) : alerts
 
@@ -37,7 +43,13 @@ export function AlertStream({
   }
 
   return (
-    <ul className="divide-line divide-y">
+    <ul
+      className={cn(
+        'divide-line panel-scroll divide-y overflow-y-auto overscroll-contain',
+        fill && 'h-full min-h-[220px] flex-1',
+      )}
+      style={fill ? undefined : { maxHeight }}
+    >
       {rows.map((alert) => {
         const Icon = ICON[alert.severity]
         return (

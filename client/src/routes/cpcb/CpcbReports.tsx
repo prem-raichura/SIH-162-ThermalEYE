@@ -46,6 +46,7 @@ export function CpcbReports({ role }: { role: Role }) {
           <SiteTable
             sites={candidates}
             columns={['name', 'class', 'state', 'detections', 'confidence']}
+            maxHeight={460}
             selectedId={selectedSiteId}
             onRowClick={(s) => {
               selectSite(s.id)
@@ -92,7 +93,7 @@ export function CpcbReports({ role }: { role: Role }) {
             body="Generating a report renders a printable evidence sheet and logs it to the console."
           />
         ) : (
-          <ul className="divide-line divide-y text-[12.5px]">
+          <ul className="divide-line panel-scroll max-h-[240px] divide-y overflow-y-auto overscroll-contain text-[12.5px]">
             {generated.map((row, i) => (
               <li key={`${row.id}-${i}`} className="flex items-center justify-between gap-4 py-2">
                 <span className="truncate">{row.name}</span>

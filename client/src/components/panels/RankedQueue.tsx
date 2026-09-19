@@ -21,12 +21,18 @@ export function RankedQueue({
   onSelect,
   selectedId,
   limit,
+  maxHeight = 360,
+  fill = false,
   showAssessment = true,
 }: {
   rows: UnmappedCandidate[]
   onSelect?: (row: UnmappedCandidate) => void
   selectedId?: string | null
   limit?: number
+  /** Body height in px before the queue scrolls inside itself. */
+  maxHeight?: number
+  /** Take the panel's remaining height instead of a fixed one. */
+  fill?: boolean
   showAssessment?: boolean
 }) {
   const visible = limit ? rows.slice(0, limit) : rows
@@ -41,16 +47,19 @@ export function RankedQueue({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[480px] text-[12.5px]">
-        <thead className="text-ink-faint border-line border-b text-[10.5px]">
+    <div
+      className={cn('panel-scroll overflow-auto overscroll-contain', fill && 'h-full min-h-[260px] flex-1')}
+      style={fill ? undefined : { maxHeight }}
+    >
+      <table className={cn('w-full text-[12.5px]', showAssessment ? 'min-w-[480px]' : 'min-w-[360px]')}>
+        <thead className="text-ink-faint sticky top-0 z-10 text-[10.5px] [&_th]:bg-card [&_th]:border-line [&_th]:border-b">
           <tr>
             <th className="w-8 py-2 pr-3 text-left font-normal">#</th>
             <th className="px-3 py-2 text-left font-normal">Location</th>
             <th className="px-3 py-2 text-right font-normal">Persistence</th>
             <th className="px-3 py-2 text-right font-normal">T_hot</th>
             {showAssessment && <th className="px-3 py-2 text-left font-normal">Assessment</th>}
-            <th className="py-2 pl-3 text-right font-normal">Coverage quality</th>
+            <th className="py-2 pl-3 text-right font-normal">{showAssessment ? 'Coverage quality' : 'Coverage'}</th>
           </tr>
         </thead>
         <tbody className="divide-line divide-y">
@@ -82,7 +91,7 @@ export function RankedQueue({
               )}
               <td className="py-2 pl-3">
                 <div className="flex justify-end">
-                  <QualityChip score={row.coverageQualityScore} width={40} />
+                  <QualityChip score={row.coverageQualityScore} width={showAssessment ? 40 : 28} />
                 </div>
               </td>
             </tr>

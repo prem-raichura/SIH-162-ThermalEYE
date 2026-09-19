@@ -7,10 +7,13 @@ import { StatTile } from '@/components/panels/StatTile'
 import { DistributionDonut } from '@/components/panels/DistributionDonut'
 import { RankedQueue } from '@/components/panels/RankedQueue'
 import { SiteTable } from '@/components/panels/SiteTable'
+import { SiteCard } from '@/components/panels/SiteCard'
+import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useCpcbSites, useUnmappedQueue } from './useCpcbData'
 import { useFilters } from '@/store/useFilters'
+import { siteById } from '@/lib/data'
 import { useSettings, formatTemp } from '@/store/useSettings'
 import { logLine } from '@/store/useConsole'
 import { CLASS_COLOR } from '@/lib/thermal'
@@ -26,6 +29,8 @@ export function CpcbOverview({ role }: { role: Role }) {
   const selectSite = useFilters((s) => s.selectSite)
   const selectUnmapped = useFilters((s) => s.selectUnmapped)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
+  const openDetail = useFilters((s) => s.openDetail)
+  const selected = siteById(selectedSiteId)
   const [reportFor, setReportFor] = useState<string | null>(null)
 
   const stats = useMemo(() => {
@@ -117,7 +122,8 @@ export function CpcbOverview({ role }: { role: Role }) {
           >
             <RankedQueue
               rows={unmapped}
-              limit={5}
+              limit={6}
+              maxHeight={252}
               showAssessment={false}
               onSelect={(row) => {
                 selectUnmapped(row.id)
@@ -128,22 +134,40 @@ export function CpcbOverview({ role }: { role: Role }) {
         </div>
       </div>
 
-      <Panel
-        title="Recent industrial events"
-        subtitle="Most recently detected sites in the current filter"
-        action={<PanelLink onClick={() => navigate('/cpcb/sites')}>Open site list</PanelLink>}
-      >
-        <SiteTable
-          sites={[...filtered].sort((a, b) => (b.lastDetection ?? '').localeCompare(a.lastDetection ?? ''))}
-          columns={['name', 'class', 'state', 'tHot', 'frpDensity', 'persistence', 'lastDetection', 'status']}
-          maxRows={8}
-          selectedId={selectedSiteId}
-          onRowClick={(site) => {
-            selectSite(site.id)
-            logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
-          }}
-        />
-      </Panel>
+      <div className="grid gap-3 xl:grid-cols-[1.5fr_1fr]">
+        <div className="relative min-h-[380px]">
+          <Panel
+            title="Recent industrial events"
+            subtitle="Most recently detected sites in the current filter"
+            action={<PanelLink onClick={() => navigate('/cpcb/sites')}>Open site list</PanelLink>}
+            className="absolute inset-0"
+          >
+            <SiteTable
+              sites={[...filtered].sort((a, b) => (b.lastDetection ?? '').localeCompare(a.lastDetection ?? ''))}
+              columns={['name', 'class', 'state', 'tHot', 'frpDensity', 'persistence', 'lastDetection', 'status']}
+              fill
+              selectedId={selectedSiteId}
+              onRowClick={(site) => {
+                selectSite(site.id)
+                logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
+              }}
+            />
+          </Panel>
+        </div>
+
+        <div>
+          <Panel title="Selected site" subtitle="Readings for whatever is picked on the map or in the table">
+            {selected ? (
+              <SiteCard site={selected} onOpenDetail={openDetail} />
+            ) : (
+              <EmptyState
+                title="Nothing selected yet"
+                body="Click a point on the map or a row in the table. The full record opens from here."
+              />
+            )}
+          </Panel>
+        </div>
+      </div>
 
       <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />

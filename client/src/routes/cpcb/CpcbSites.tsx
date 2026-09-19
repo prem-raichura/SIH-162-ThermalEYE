@@ -17,6 +17,7 @@ import type { Role } from '@/lib/roles'
 export function CpcbSites({ role }: { role: Role }) {
   const { filtered, industrial, states } = useCpcbSites()
   const selectSite = useFilters((s) => s.selectSite)
+  const openDetail = useFilters((s) => s.openDetail)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
   const selected = siteById(selectedSiteId)
   const [reportFor, setReportFor] = useState<string | null>(null)
@@ -39,35 +40,45 @@ export function CpcbSites({ role }: { role: Role }) {
         <FilterBar role="cpcb" classes={INDUSTRIAL_CLASSES} states={states} />
       </Panel>
 
+      {/* The table cell stretches to the row height, which the map column sets. Taking the
+          panel out of flow with absolute positioning stops the 720 rows from driving that
+          height themselves — so the table gets a definite height, scrolls inside it, and
+          still grows whenever the card beside it does. */}
       <div className="grid gap-3 xl:grid-cols-[1.35fr_1fr]">
-        <Panel title="Sites" subtitle="Sort any column. Selecting a row flies the map and opens the full record.">
-          <SiteTable
-            sites={filtered}
-            columns={[
-              'name',
-              'class',
-              'state',
-              'tHot',
-              'deltaT',
-              'frpDensity',
-              'nightRatio',
-              'detections',
-              'persistence',
-              'status',
-            ]}
-            maxRows={40}
-            selectedId={selectedSiteId}
-            onRowClick={(site) => {
-              selectSite(site.id)
-              logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
-            }}
-          />
-        </Panel>
+        <div className="relative min-h-[460px]">
+          <Panel
+            title="Sites"
+            subtitle="Sort any column. Selecting a row flies the map and fills the card below it."
+            className="absolute inset-0"
+          >
+            <SiteTable
+              sites={filtered}
+              columns={[
+                'name',
+                'class',
+                'state',
+                'tHot',
+                'deltaT',
+                'frpDensity',
+                'nightRatio',
+                'detections',
+                'persistence',
+                'status',
+              ]}
+              fill
+              selectedId={selectedSiteId}
+              onRowClick={(site) => {
+                selectSite(site.id)
+                logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
+              }}
+            />
+          </Panel>
+        </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={filtered} className="min-h-[360px]" />
+          <ThermalMap role={role} sites={filtered} controls="below" />
           {selected ? (
-            <SiteCard site={selected} />
+            <SiteCard site={selected} onOpenDetail={openDetail} />
           ) : (
             <Panel>
               <p className="text-ink-soft py-6 text-center text-[12.5px]">

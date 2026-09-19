@@ -186,3 +186,108 @@
   background: var(--color-con-line);
   border-radius: 999px;
 }
+
+/* panel scrollbars — thin, on the paper palette, so a scrolling table stays quiet */
+.panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.panel-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 999px;
+}
+.panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-faint);
+}
+
+/* ---------------------------------------------------------------- enter / exit motion
+   The shadcn primitives use animate-in / slide-in-from-* class names that come from a
+   plugin we do not depend on. These register the same names as real Tailwind utilities so
+   the data-[state=open]: variants compile. One keyframe per direction with variables, so
+   fade and slide combine on one element instead of overwriting each other. */
+@keyframes te-enter {
+  from {
+    opacity: var(--te-enter-opacity, 1);
+    transform: translate3d(var(--te-enter-x, 0), var(--te-enter-y, 0), 0) scale(var(--te-enter-scale, 1));
+  }
+}
+
+@keyframes te-exit {
+  to {
+    opacity: var(--te-exit-opacity, 1);
+    transform: translate3d(var(--te-exit-x, 0), var(--te-exit-y, 0), 0) scale(var(--te-exit-scale, 1));
+  }
+}
+
+@utility animate-in {
+  animation-name: te-enter;
+  animation-duration: var(--tw-duration, 280ms);
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+@utility animate-out {
+  animation-name: te-exit;
+  animation-duration: var(--tw-duration, 220ms);
+  animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  animation-fill-mode: both;
+}
+
+@utility fade-in-0 {
+  --te-enter-opacity: 0;
+}
+@utility fade-out-0 {
+  --te-exit-opacity: 0;
+}
+@utility zoom-in-95 {
+  --te-enter-scale: 0.95;
+}
+@utility zoom-out-95 {
+  --te-exit-scale: 0.95;
+}
+
+@utility slide-in-from-right {
+  --te-enter-x: 100%;
+}
+@utility slide-in-from-left {
+  --te-enter-x: -100%;
+}
+@utility slide-in-from-top {
+  --te-enter-y: -100%;
+}
+@utility slide-in-from-bottom {
+  --te-enter-y: 100%;
+}
+@utility slide-out-to-right {
+  --te-exit-x: 100%;
+}
+@utility slide-out-to-left {
+  --te-exit-x: -100%;
+}
+@utility slide-out-to-top {
+  --te-exit-y: -100%;
+}
+@utility slide-out-to-bottom {
+  --te-exit-y: 100%;
+}
+
+/* menus and popovers nudge a few pixels rather than sliding a full panel width */
+@utility slide-in-from-right-2 {
+  --te-enter-x: -8px;
+}
+@utility slide-in-from-left-2 {
+  --te-enter-x: 8px;
+}
+@utility slide-in-from-top-2 {
+  --te-enter-y: -8px;
+}
+@utility slide-in-from-bottom-2 {
+  --te-enter-y: 8px;
+}

@@ -64,19 +64,22 @@ export function CpcbUnmapped({ role }: { role: Role }) {
       <CoverageCaveat />
 
       <div className="grid gap-3 xl:grid-cols-[1.4fr_1fr]">
-        <Panel title="Candidate queue" subtitle="Select a row to inspect it">
-          <RankedQueue
-            rows={rows}
-            selectedId={selected?.id ?? null}
-            onSelect={(row) => {
-              selectUnmapped(row.id)
-              logLine(role.id, `Inspecting unmapped candidate #${row.rank} — ${row.state}`)
-            }}
-          />
-        </Panel>
+        <div className="relative min-h-[460px]">
+          <Panel title="Candidate queue" subtitle="Select a row to inspect it" className="absolute inset-0">
+            <RankedQueue
+              rows={rows}
+              fill
+              selectedId={selected?.id ?? null}
+              onSelect={(row) => {
+                selectUnmapped(row.id)
+                logLine(role.id, `Inspecting unmapped candidate #${row.rank} — ${row.state}`)
+              }}
+            />
+          </Panel>
+        </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={[]} unmapped={rows} className="min-h-[300px]" />
+          <ThermalMap role={role} sites={[]} unmapped={rows} controls="below" />
 
           {selected && (
             <Panel title={`#${selected.rank} · ${selected.label}`} subtitle={selected.assessment}>

@@ -17,7 +17,8 @@ import type { Role } from '@/lib/roles'
 /** The one place a site is explained in full: identity, physics, history, evidence, context. */
 export function SiteDetailDrawer({ role, onGenerateReport }: { role: Role; onGenerateReport?: (siteId: string) => void }) {
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
-  const selectSite = useFilters((s) => s.selectSite)
+  const detailOpen = useFilters((s) => s.detailOpen)
+  const closeDetail = useFilters((s) => s.closeDetail)
   const site = siteById(selectedSiteId)
 
   if (!site) return null
@@ -56,7 +57,8 @@ export function SiteDetailDrawer({ role, onGenerateReport }: { role: Role; onGen
   ]
 
   return (
-    <Sheet open onOpenChange={(open) => !open && selectSite(null)}>
+    // Closing the drawer keeps the site selected, so the page's own panels stay filled.
+    <Sheet open={detailOpen} onOpenChange={(open) => !open && closeDetail()}>
       <SheetContent side="right" className="w-full gap-0 overflow-y-auto p-0 sm:max-w-[520px]">
         <SheetHeader className="border-line gap-1 border-b px-5 py-4">
           <div className="flex items-center gap-2">

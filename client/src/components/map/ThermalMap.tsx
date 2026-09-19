@@ -62,12 +62,18 @@ export function ThermalMap({
   sites,
   unmapped = allUnmapped,
   availableLayers,
+  controls = 'overlay',
+  aspect = 'square',
   className,
 }: {
   role: Role
   sites: ThermalSite[]
   unmapped?: UnmappedCandidate[]
   availableLayers?: LayerId[]
+  /** 'below' moves the controls into a bar under the map, for small panels. */
+  controls?: 'overlay' | 'below'
+  /** Canvas shape when the controls sit below — the map sizes itself from its width. */
+  aspect?: 'square' | 'landscape' | 'tall'
   className?: string
 }) {
   const mapRef = useRef<MapRef>(null)
@@ -229,8 +235,19 @@ export function ThermalMap({
     shows('alerts') ? 'alerts-circle' : null,
   ].filter((v): v is string => v !== null)
 
+  const overlay = controls === 'overlay'
+  const ASPECT = { square: 'aspect-square', landscape: 'aspect-[4/3]', tall: 'aspect-[3/4]' }
+
   return (
-    <div className={cn('relative overflow-hidden rounded-[14px]', className)}>
+    <div className={cn('flex min-h-0 flex-col gap-2', className)}>
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-[14px]',
+          // With the controls below, the canvas takes its height from its own width so it
+          // never ends up as a letterbox strip inside a narrow column.
+          overlay ? 'h-full min-h-0 flex-1' : cn('w-full max-h-[600px] min-h-[320px]', ASPECT[aspect]),
+        )}
+      >
       <Map
         ref={mapRef}
         initialViewState={{ longitude: role.mapFocus[0], latitude: role.mapFocus[1], zoom: role.mapFocus[2] }}
@@ -335,18 +352,32 @@ export function ThermalMap({
         )}
       </Map>
 
-      <div className="pointer-events-none absolute inset-0 p-3">
-        <div className="pointer-events-auto absolute top-3 left-3">
-          <BasemapToggle />
+      {overlay && (
+        <div className="pointer-events-none absolute inset-0 p-3">
+          <div className="pointer-events-auto absolute top-3 left-3">
+            <BasemapToggle />
+          </div>
+          <div className="pointer-events-auto absolute top-3 right-3 w-[188px]">
+            <LayerPanel available={availableLayers} />
+          </div>
+          <div className="pointer-events-auto absolute bottom-3 left-3 flex flex-col gap-2">
+            <ThermalLegend />
+            <TimeWindowPicker />
+          </div>
         </div>
-        <div className="pointer-events-auto absolute top-3 right-3 w-[188px]">
-          <LayerPanel available={availableLayers} />
-        </div>
-        <div className="pointer-events-auto absolute bottom-3 left-3 flex flex-col gap-2">
-          <ThermalLegend />
-          <TimeWindowPicker />
-        </div>
+      )}
       </div>
+
+      {!overlay && (
+        <div className="bg-card border-line flex flex-col gap-2 rounded-[12px] border px-3 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <BasemapToggle />
+            <ThermalLegend variant="inline" />
+          </div>
+          <LayerPanel available={availableLayers} variant="chips" />
+          <TimeWindowPicker className="self-start" />
+        </div>
+      )}
     </div>
   )
 }

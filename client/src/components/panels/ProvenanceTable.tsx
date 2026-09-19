@@ -20,10 +20,16 @@ export function ProvenanceTable({
   sites,
   onRowClick,
   maxRows,
+  maxHeight = 420,
+  fill = false,
 }: {
   sites: ThermalSite[]
   onRowClick?: (site: ThermalSite) => void
   maxRows?: number
+  /** Body height in px before the table scrolls inside itself. */
+  maxHeight?: number
+  /** Take the panel's remaining height instead of a fixed one. */
+  fill?: boolean
 }) {
   const rows = maxRows ? sites.slice(0, maxRows) : sites
   if (rows.length === 0) {
@@ -31,9 +37,12 @@ export function ProvenanceTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className={cn('panel-scroll overflow-auto overscroll-contain', fill && 'h-full min-h-[260px] flex-1')}
+      style={fill ? undefined : { maxHeight }}
+    >
       <table className="w-full min-w-[720px] text-[12.5px]">
-        <thead className="text-ink-faint border-line border-b text-[10.5px]">
+        <thead className="text-ink-faint sticky top-0 z-10 text-[10.5px] [&_th]:bg-card [&_th]:border-line [&_th]:border-b">
           <tr>
             <th className="px-3 py-2 text-left font-normal first:pl-0">Site</th>
             <th className="px-3 py-2 text-left font-normal first:pl-0">Register</th>

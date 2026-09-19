@@ -15,10 +15,14 @@ const clock = (d: Date) =>
   `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`
 
 export function LogStream({ lines, autoScroll }: { lines: LogLine[]; autoScroll: boolean }) {
-  const endRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Scroll the log container itself. scrollIntoView would walk up the ancestors and drag the
+  // whole page with it, which is what made the dashboard jump on every new line.
   useEffect(() => {
-    if (autoScroll) endRef.current?.scrollIntoView({ block: 'end' })
+    const el = scrollRef.current
+    if (!el || !autoScroll) return
+    el.scrollTop = el.scrollHeight
   }, [lines.length, autoScroll])
 
   if (lines.length === 0) {
@@ -30,7 +34,10 @@ export function LogStream({ lines, autoScroll }: { lines: LogLine[]; autoScroll:
   }
 
   return (
-    <div className="console-scroll h-full overflow-y-auto px-3 py-2 font-mono text-[11.5px] leading-[1.75]">
+    <div
+      ref={scrollRef}
+      className="console-scroll h-full overflow-y-auto overscroll-contain px-3 py-2 font-mono text-[11.5px] leading-[1.75]"
+    >
       {lines.map((line) => (
         <div key={line.id} className="flex gap-3">
           <span className="text-con-faint tnum shrink-0">{clock(line.at)}</span>
@@ -40,7 +47,6 @@ export function LogStream({ lines, autoScroll }: { lines: LogLine[]; autoScroll:
           <span className="text-con-text min-w-0">{line.message}</span>
         </div>
       ))}
-      <div ref={endRef} />
     </div>
   )
 }

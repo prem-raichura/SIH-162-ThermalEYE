@@ -8,11 +8,14 @@ import { cn } from '@/lib/utils'
 export function SiteCard({
   site,
   onClick,
+  onOpenDetail,
   selected,
   className,
 }: {
   site: ThermalSite
   onClick?: () => void
+  /** Reopens the full-record drawer for a site that is already selected. */
+  onOpenDetail?: () => void
   selected?: boolean
   className?: string
 }) {
@@ -72,8 +75,20 @@ export function SiteCard({
         ))}
       </dl>
 
-      <div className="border-line mt-3 border-t pt-2">
+      <div className="border-line mt-3 flex items-center justify-between gap-3 border-t pt-2">
         <QualityChip label="Coverage quality" score={site.coverageQualityScore} />
+        {onOpenDetail && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenDetail()
+            }}
+            className="text-ink-soft hover:text-ink shrink-0 text-[12px] underline-offset-4 hover:underline"
+          >
+            Full record
+          </button>
+        )}
       </div>
     </article>
   )

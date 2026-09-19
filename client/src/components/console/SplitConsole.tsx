@@ -7,7 +7,8 @@ import { ROLE_LIST, type Role } from '@/lib/roles'
 import { cn } from '@/lib/utils'
 
 const HEADER_H = 40
-const MIN_H = 140
+// Below this the status panel and the action buttons stop fitting.
+const MIN_H = 208
 
 /**
  * Bottom-docked operator log. Every user action in the app writes a line here, which is
@@ -65,8 +66,8 @@ export function SplitConsole({ role }: { role: Role }) {
   return (
     <section
       aria-label="Split console"
-      className="bg-con-bg text-con-text shrink-0 overflow-hidden"
-      style={{ height: collapsed ? HEADER_H : height }}
+      className="bg-con-bg text-con-text flex shrink-0 flex-col overflow-hidden"
+      style={{ height: collapsed ? HEADER_H : Math.max(MIN_H, height) }}
     >
       {/* The whole header is the resize handle — a 4px strip is too small to hit reliably. */}
       <div
@@ -79,7 +80,7 @@ export function SplitConsole({ role }: { role: Role }) {
         aria-orientation="horizontal"
         aria-label="Resize console"
         className={cn(
-          'flex h-[40px] touch-none items-center px-4 select-none',
+          'flex h-[40px] shrink-0 touch-none items-center px-4 select-none',
           collapsed ? 'cursor-pointer' : 'cursor-ns-resize',
         )}
       >
@@ -101,10 +102,10 @@ export function SplitConsole({ role }: { role: Role }) {
 
       {!collapsed && (
         <div
-          className="grid gap-3 px-4 pb-3"
-          style={{ height: height - HEADER_H - 12, gridTemplateColumns: 'minmax(0,180px) minmax(0,1fr) 220px 128px' }}
+          className="grid min-h-0 flex-1 gap-3 px-4 pb-3"
+          style={{ gridTemplateColumns: 'minmax(0,180px) minmax(0,1fr) 220px 128px' }}
         >
-          <ul className="console-scroll overflow-y-auto pr-1">
+          <ul className="console-scroll overflow-y-auto overscroll-contain pr-1">
             <li>
               <SourceRow label="Overview" active={filter === 'all'} onClick={() => setFilter('all')} />
             </li>
@@ -120,7 +121,7 @@ export function SplitConsole({ role }: { role: Role }) {
             ))}
           </ul>
 
-          <div className="bg-con-panel border-con-line min-w-0 rounded-[10px] border">
+          <div className="bg-con-panel border-con-line min-h-0 min-w-0 overflow-hidden rounded-[10px] border">
             <LogStream lines={visible} autoScroll={autoScroll} />
           </div>
 

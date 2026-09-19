@@ -4,8 +4,11 @@ import { useFilters } from '@/store/useFilters'
 import { useSettings } from '@/store/useSettings'
 
 /**
- * CPCB sees the industrial branch only (section 13). Every page on this role reads its rows
- * from here so the filter bar, the map and the tables can never disagree.
+ * CPCB sees the industrial branch only (section 13). Membership follows the *predicted*
+ * class, not the register's label — the product classifies from thermal evidence, so a site
+ * the model reads as a waste fire belongs on FSI's desk even if OSM tags it as a quarry.
+ * Every page on this role reads its rows from here so the filter bar, the map and the tables
+ * can never disagree.
  */
 export function useCpcbSites() {
   const classes = useFilters((s) => s.classes)
@@ -13,12 +16,12 @@ export function useCpcbSites() {
   const behaviour = useFilters((s) => s.behaviour)
   const window = useFilters((s) => s.window)
 
-  const industrial = useMemo(() => allSites.filter((s) => INDUSTRIAL_CLASSES.includes(s.class)), [])
+  const industrial = useMemo(() => allSites.filter((s) => INDUSTRIAL_CLASSES.includes(s.predictedClass)), [])
 
   const filtered = useMemo(
     () =>
       industrial.filter((s) => {
-        if (classes && classes.length > 0 && !classes.includes(s.class)) return false
+        if (classes && classes.length > 0 && !classes.includes(s.predictedClass)) return false
         if (state && s.state !== state) return false
         if (behaviour !== 'all' && s.behaviour !== behaviour) return false
         if (window !== 'all' && !withinWindow(s.lastDetection, window)) return false

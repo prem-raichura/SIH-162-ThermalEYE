@@ -3,6 +3,7 @@ import { RoleRoute } from '@/routes/RoleRoute'
 import { LoginPage } from '@/routes/login/LoginPage'
 import { NotFound } from '@/routes/NotFound'
 import { SectionScaffold } from '@/routes/SectionScaffold'
+import { pageFor } from '@/routes/pages'
 import { ROLES, isRoleId, sectionTitle } from '@/lib/roles'
 import { useRoleStore } from '@/store/useRole'
 
@@ -13,6 +14,9 @@ function Section() {
   const { role: roleParam, section } = useParams()
   if (!isRoleId(roleParam)) return <Navigate to="/login" replace />
   const role = ROLES[roleParam]
+  const Page = pageFor(role.id, section)
+  if (Page) return <Page role={role} />
+
   return (
     <SectionScaffold
       role={role}

@@ -9,6 +9,8 @@ interface FilterState {
   search: string
   selectedSiteId: string | null
   selectedUnmappedId: string | null
+  /** Whether the full-record drawer is showing. Closing it keeps the selection. */
+  detailOpen: boolean
 
   setWindow: (window: TimeWindow) => void
   setClasses: (classes: SourceClass[] | null) => void
@@ -18,6 +20,8 @@ interface FilterState {
   setSearch: (search: string) => void
   selectSite: (id: string | null) => void
   selectUnmapped: (id: string | null) => void
+  openDetail: () => void
+  closeDetail: () => void
   reset: () => void
 }
 
@@ -29,6 +33,7 @@ const base = {
   search: '',
   selectedSiteId: null,
   selectedUnmappedId: null,
+  detailOpen: false,
 }
 
 export const useFilters = create<FilterState>((set) => ({
@@ -43,7 +48,12 @@ export const useFilters = create<FilterState>((set) => ({
   setState: (state) => set({ state }),
   setBehaviour: (behaviour) => set({ behaviour }),
   setSearch: (search) => set({ search }),
-  selectSite: (selectedSiteId) => set({ selectedSiteId, selectedUnmappedId: null }),
-  selectUnmapped: (selectedUnmappedId) => set({ selectedUnmappedId, selectedSiteId: null }),
+  // Selecting fills the page's own panels. The full-record drawer is a deliberate second
+  // step, opened from those panels.
+  selectSite: (selectedSiteId) => set({ selectedSiteId, selectedUnmappedId: null, detailOpen: false }),
+  selectUnmapped: (selectedUnmappedId) =>
+    set({ selectedUnmappedId, selectedSiteId: null, detailOpen: false }),
+  openDetail: () => set({ detailOpen: true }),
+  closeDetail: () => set({ detailOpen: false }),
   reset: () => set(base),
 }))

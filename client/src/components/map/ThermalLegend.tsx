@@ -3,11 +3,41 @@ import { RAMP, T_HOT_DOMAIN, FRP_DOMAIN } from '@/lib/thermal'
 import { cn } from '@/lib/utils'
 
 /** One ramp, two readings. Whatever is shown, the colour means the same thing. */
-export function ThermalLegend() {
+export function ThermalLegend({ variant = 'card' }: { variant?: 'card' | 'inline' }) {
   const [scale, setScale] = useState<'tHot' | 'frp'>('tHot')
   const domain = scale === 'tHot' ? T_HOT_DOMAIN : FRP_DOMAIN
   const unit = scale === 'tHot' ? 'K' : 'MW'
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((t) => Math.round(domain[0] + (domain[1] - domain[0]) * t))
+
+  if (variant === 'inline') {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1">
+          {(['tHot', 'frp'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setScale(s)}
+              className={cn(
+                'rounded-full px-2 py-0.5 text-[10.5px] transition-colors',
+                scale === s ? 'bg-ink text-paper' : 'text-ink-faint hover:text-ink',
+              )}
+            >
+              {s === 'tHot' ? 'T_hot' : 'FRP'}
+            </button>
+          ))}
+        </div>
+        <span className="text-ink-faint tnum font-mono text-[10px]">{domain[0]}</span>
+        <span
+          className="h-2 w-24 rounded-full"
+          style={{ background: `linear-gradient(90deg, ${RAMP.join(', ')})` }}
+        />
+        <span className="text-ink-faint tnum font-mono text-[10px]">
+          {domain[1]} {unit}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-card/92 border-line w-[236px] rounded-[12px] border px-3 py-2.5 shadow-sm backdrop-blur">
