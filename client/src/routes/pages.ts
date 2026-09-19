@@ -19,6 +19,11 @@ import { CeaBaselines } from './cea/CeaBaselines'
 import { CeaAlerts } from './cea/CeaAlerts'
 import { CeaHistorical } from './cea/CeaHistorical'
 import { CeaReports } from './cea/CeaReports'
+import { IbmOverview } from './ibm/IbmOverview'
+import { IbmSites } from './ibm/IbmSites'
+import { IbmUnmapped } from './ibm/IbmUnmapped'
+import { IbmLandCover } from './ibm/IbmLandCover'
+import { IbmReports } from './ibm/IbmReports'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -51,6 +56,13 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     alerts: CeaAlerts,
     historical: CeaHistorical,
     reports: CeaReports,
+  },
+  ibm: {
+    '': IbmOverview,
+    sites: IbmSites,
+    unmapped: IbmUnmapped,
+    landcover: IbmLandCover,
+    reports: IbmReports,
   },
 }
 
