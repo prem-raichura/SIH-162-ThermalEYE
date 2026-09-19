@@ -333,7 +333,9 @@ for (const [cls, count] of Object.entries(NON_INDUSTRIAL_COUNT)) {
     }
     sites.push(
       makeSite({
-        name: `${CLASS_LABEL[cls]} · ${st.name} ${rand.pick(PLACE_WORDS)} ${rand.int(2, 89)}`,
+        // Named by place only. Putting the class in the name would leak the label into the
+        // UI and make an honest misclassification read as a broken row.
+        name: `${st.name} ${rand.pick(PLACE_WORDS)} ${rand.int(2, 89)}`,
         operator: null,
         cls,
         lat,

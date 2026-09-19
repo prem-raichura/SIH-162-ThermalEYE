@@ -17,6 +17,7 @@ export type ColumnId =
   | 'tHot'
   | 'deltaT'
   | 'frpMean'
+  | 'frpPeak'
   | 'frpDensity'
   | 'nightRatio'
   | 'saturation'
@@ -77,6 +78,7 @@ const COLUMNS: Record<ColumnId, Column> = {
   },
   deltaT: { id: 'deltaT', label: 'ΔT', align: 'right', sort: (s) => s.deltaT ?? 0, render: (s) => `${s.deltaT ?? '—'} K` },
   frpMean: { id: 'frpMean', label: 'Mean FRP', align: 'right', sort: (s) => s.frpMean, render: (s) => megawatt(s.frpMean) },
+  frpPeak: { id: 'frpPeak', label: 'Peak FRP', align: 'right', sort: (s) => s.frpPeak, render: (s) => megawatt(s.frpPeak) },
   frpDensity: {
     id: 'frpDensity',
     label: 'FRP density',

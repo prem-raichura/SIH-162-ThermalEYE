@@ -24,6 +24,12 @@ import { IbmSites } from './ibm/IbmSites'
 import { IbmUnmapped } from './ibm/IbmUnmapped'
 import { IbmLandCover } from './ibm/IbmLandCover'
 import { IbmReports } from './ibm/IbmReports'
+import { FsiOverview } from './fsi/FsiOverview'
+import { FsiCrop, FsiForest } from './fsi/FsiEvents'
+import { FsiAlerts } from './fsi/FsiAlerts'
+import { FsiVegetation } from './fsi/FsiVegetation'
+import { FsiSeasonal } from './fsi/FsiSeasonal'
+import { FsiReports } from './fsi/FsiReports'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -63,6 +69,15 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     unmapped: IbmUnmapped,
     landcover: IbmLandCover,
     reports: IbmReports,
+  },
+  fsi: {
+    '': FsiOverview,
+    forest: FsiForest,
+    crop: FsiCrop,
+    alerts: FsiAlerts,
+    vegetation: FsiVegetation,
+    seasonal: FsiSeasonal,
+    reports: FsiReports,
   },
 }
 
