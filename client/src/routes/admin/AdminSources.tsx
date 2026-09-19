@@ -63,12 +63,12 @@ export function AdminSources({ role }: { role: Role }) {
         />
       </div>
 
-      {tiers.map((tier) => (
-        <Panel key={tier} title={tier} subtitle={`${nf(sourceReport.sources.filter((s) => s.tier === tier).length)} requirements`}>
-          <ul className="divide-line divide-y">
-            {sourceReport.sources
-              .filter((s) => s.tier === tier)
-              .map((row) => {
+      {tiers.map((tier) => {
+        const rows = sourceReport.sources.filter((s) => s.tier === tier)
+        return (
+          <Panel key={tier} title={tier} subtitle={`${nf(rows.length)} requirement${rows.length === 1 ? '' : 's'}`}>
+            <ul className="divide-line divide-y">
+              {rows.map((row) => {
                 const style = STATUS_STYLE[row.status]
                 const Icon = style.icon
                 return (
@@ -92,9 +92,10 @@ export function AdminSources({ role }: { role: Role }) {
                   </li>
                 )
               })}
-          </ul>
-        </Panel>
-      ))}
+            </ul>
+          </Panel>
+        )
+      })}
 
       <Panel title="Why Sentinel is the one that hurts" subtitle="It gates the ablations, not the spine">
         <p className="text-ink-soft flex items-start gap-2 text-[12.5px]">

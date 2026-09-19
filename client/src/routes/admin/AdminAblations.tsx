@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Thermometer } from 'lucide-react'
 import { PageHeader } from '@/components/shell/PageHeader'
 import { Panel } from '@/components/panels/Panel'
@@ -94,6 +94,14 @@ export function AdminAblations({ role }: { role: Role }) {
               <XAxis dataKey="run" tickLine={false} axisLine={{ stroke: AXIS.stroke }} tick={AXIS.tick} />
               <YAxis tickLine={false} axisLine={false} tick={AXIS.tick} width={46} domain={[0, 100]} unit="%" />
               <Tooltip {...TOOLTIP_STYLE} formatter={(value, name) => [`${value}%`, String(name)]} />
+              <Legend
+                verticalAlign="top"
+                align="left"
+                height={24}
+                iconType="square"
+                iconSize={10}
+                wrapperStyle={{ fontSize: 11.5, color: 'var(--color-ink-soft)', paddingLeft: 30 }}
+              />
               <Bar dataKey="accuracy" name="Accuracy" radius={MARK.barRadius} isAnimationActive={false}>
                 {complete.map((r) => (
                   <Cell key={r.run} fill={r.run === key.to ? STATUS.good : CHART_CATEGORICAL[2]} />
@@ -102,6 +110,9 @@ export function AdminAblations({ role }: { role: Role }) {
               <Bar dataKey="macroF1" name="Macro-F1" fill={CHART_CATEGORICAL[4]} radius={MARK.barRadius} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
+          <p className="text-ink-faint mt-1 text-[11.5px]">
+            A1's accuracy bar is picked out in green — it is the run where the derived thermal physics enters.
+          </p>
         </div>
       </Panel>
 
