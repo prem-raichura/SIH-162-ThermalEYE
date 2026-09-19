@@ -109,6 +109,22 @@
   --color-accent-foreground: #cfe3d9;
 }
 
+/* Focus rings live outside every layer on purpose. shadcn's button carries Tailwind's
+   `outline-none`, which sits in the utilities layer and would win over a layered rule and
+   leave the primary action with no visible focus indicator. Unlayered declarations beat
+   every layered one, so the ring holds on shadcn components and plain elements alike. */
+:focus-visible {
+  outline: 2px solid var(--role-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* The role accent is chosen against paper, so on the near-black console it can fall below
+   AA. Inside the console the ring switches to a light one that always reads. */
+.console-surface :focus-visible {
+  outline-color: var(--color-con-text);
+}
+
 @layer base {
   * {
     border-color: var(--color-line);
@@ -129,18 +145,6 @@
   ::selection {
     background: var(--color-amber-dim);
     color: var(--color-ink);
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--role-accent);
-    outline-offset: 2px;
-    border-radius: 3px;
-  }
-
-  /* The role accent is chosen against paper, so on the near-black console it can fall below
-     AA. Inside the console the ring switches to a light one that always reads. */
-  .console-surface :focus-visible {
-    outline-color: var(--color-con-text);
   }
 
   /* Skip link: off-screen until focused, then a real control at the top of the page. */
