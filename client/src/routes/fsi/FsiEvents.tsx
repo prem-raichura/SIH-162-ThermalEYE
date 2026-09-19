@@ -144,7 +144,7 @@ export function FsiEvents({
           <ThermalMap
             role={role}
             sites={rows.map((r) => r.site)}
-            controls="below"
+            shape="square"
             availableLayers={['thermal', 'sites', 'landcover', 'districts']}
           />
           {selected ? (

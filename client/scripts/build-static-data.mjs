@@ -629,8 +629,16 @@ const abnormalSites = sites.filter((s) => s.behaviour === 'abnormal')
 const alertPool = rand.shuffle(abnormalSites).concat(
   rand.shuffle(sites.filter((s) => s.branch === 'non_industrial')).slice(0, 26),
 )
+/**
+ * Severity is deviation from the site's own normal ceiling, never a global FRP threshold
+ * (section 19). These are the shipped defaults; NDMA can re-bin them at runtime, and
+ * src/lib/severity.ts carries the same numbers on the app side.
+ */
+const SEVERITY_BANDS = { high: 140, medium: 40 }
+const severityOf = (deviationPct) =>
+  deviationPct >= SEVERITY_BANDS.high ? 'high' : deviationPct >= SEVERITY_BANDS.medium ? 'medium' : 'low'
+
 const alerts = alertPool.slice(0, 48).map((s, i) => {
-  const severity = s.deviationPct > 140 ? 'high' : s.deviationPct > 40 || s.branch === 'industrial' ? 'medium' : 'low'
   return {
     id: `A${String(i + 1).padStart(4, '0')}`,
     siteId: s.id,
@@ -647,13 +655,53 @@ const alerts = alertPool.slice(0, 48).map((s, i) => {
     normalLow: s.normalLow,
     normalHigh: s.normalHigh,
     deviationPct: s.deviationPct,
-    severity,
+    severity: severityOf(s.deviationPct),
     minutesAgo: 6 + i * rand.int(5, 34),
     status: i < 3 ? 'new' : rand.bool(0.2) ? 'acknowledged' : 'open',
     evidenceModel: rand.shuffle(MODEL_EVIDENCE).slice(0, 3).map(([feature, note]) => ({ feature, note })),
     evidenceContext: rand.shuffle(CONTEXT_EVIDENCE).slice(0, 2).map(([feature, note]) => ({ feature, note })),
   }
 })
+/**
+ * The 48 above are the sites whose 30-day behaviour is abnormal. A disaster-response feed
+ * also carries the quieter end of the distribution: single-pass excursions at sites whose
+ * 30-day behaviour is still normal. They are generated from their own PRNG stream so adding
+ * them leaves every other generated file byte-identical.
+ */
+const alertRand = makeRandom(0x5eed163)
+const quietPool = alertRand
+  .shuffle(sites.filter((s) => s.behaviour === 'normal' && s.frpMean > 0 && s.class !== 'nonthermal_control'))
+  .slice(0, 123)
+const quietAlerts = quietPool.map((s, i) => {
+  // A single pass can sit above the site's own ceiling without the 30-day window calling the
+  // site abnormal — that is exactly what a low-severity alert is.
+  const excursion = alertRand.bool(0.28) ? alertRand.float(1.45, 2.3) : alertRand.float(1.03, 1.38)
+  const currentFrp = round(s.normalHigh * excursion, 1)
+  const deviationPct = Math.round(((currentFrp - s.normalHigh) / s.normalHigh) * 100)
+  return {
+    id: `A${String(49 + i).padStart(4, '0')}`,
+    siteId: s.id,
+    title: ALERT_TITLES[s.class] ?? 'Thermal anomaly',
+    siteName: s.name,
+    state: s.state,
+    lat: s.lat,
+    lon: s.lon,
+    sourceClass: s.predictedClass,
+    sourceLabel: s.predictedLabel,
+    branch: s.branch,
+    confidence: s.confidence,
+    currentFrp,
+    normalLow: s.normalLow,
+    normalHigh: s.normalHigh,
+    deviationPct,
+    severity: severityOf(deviationPct),
+    minutesAgo: 12 + i * alertRand.int(6, 42),
+    status: alertRand.bool(0.16) ? 'acknowledged' : 'open',
+    evidenceModel: alertRand.shuffle(MODEL_EVIDENCE).slice(0, 3).map(([feature, note]) => ({ feature, note })),
+    evidenceContext: alertRand.shuffle(CONTEXT_EVIDENCE).slice(0, 2).map(([feature, note]) => ({ feature, note })),
+  }
+})
+alerts.push(...quietAlerts)
 alerts.sort((a, b) => a.minutesAgo - b.minutesAgo)
 
 // ---------------------------------------------------------------- coverage audit

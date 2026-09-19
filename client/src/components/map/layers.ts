@@ -1,4 +1,9 @@
-import type { CircleLayerSpecification, HeatmapLayerSpecification, LineLayerSpecification } from 'maplibre-gl'
+import type {
+  CircleLayerSpecification,
+  HeatmapLayerSpecification,
+  LineLayerSpecification,
+  SymbolLayerSpecification,
+} from 'maplibre-gl'
 import { CLASS_COLOR, RAMP } from '@/lib/thermal'
 
 type Paint<T> = Omit<T, 'id' | 'source'>
@@ -83,6 +88,29 @@ export const alertLayer: Paint<CircleLayerSpecification> = {
     'circle-radius': ['match', ['get', 'severity'], 'high', 9, 'medium', 7, 5.5],
     'circle-stroke-width': 2,
     'circle-stroke-color': 'rgba(255,255,255,0.92)',
+  },
+}
+
+/** Incident clusters at low zoom. No count label — the offline style ships no glyphs, so the
+ * cluster is sized by how many alerts it holds and names them on hover. */
+export const incidentClusterLayer: Paint<CircleLayerSpecification> = {
+  type: 'circle',
+  filter: ['has', 'point_count'],
+  paint: {
+    'circle-color': 'rgba(193, 74, 51, 0.18)',
+    'circle-radius': ['interpolate', ['linear'], ['get', 'point_count'], 2, 11, 10, 17, 40, 25, 120, 34],
+    'circle-stroke-width': 1.5,
+    'circle-stroke-color': '#c14a33',
+  },
+}
+
+export const incidentIconLayer: Paint<SymbolLayerSpecification> = {
+  type: 'symbol',
+  filter: ['!', ['has', 'point_count']],
+  layout: {
+    'icon-image': ['match', ['get', 'severity'], 'high', 'incident-high', 'medium', 'incident-medium', 'incident-low'],
+    'icon-allow-overlap': true,
+    'icon-size': ['interpolate', ['linear'], ['zoom'], 3, 0.55, 10, 1],
   },
 }
 

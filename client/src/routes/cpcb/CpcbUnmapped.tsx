@@ -79,7 +79,7 @@ export function CpcbUnmapped({ role }: { role: Role }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={[]} unmapped={rows} controls="below" />
+          <ThermalMap role={role} sites={[]} unmapped={rows} shape="square" />
 
           {selected && (
             <Panel title={`#${selected.rank} · ${selected.label}`} subtitle={selected.assessment}>

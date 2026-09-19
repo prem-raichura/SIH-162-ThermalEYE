@@ -105,7 +105,7 @@ export function PpacGas({ role }: { role: Role }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={[...refineries, ...lng]} controls="below" />
+          <ThermalMap role={role} sites={[...refineries, ...lng]} shape="square" />
 
           <Panel title="Where the join is uncertain" subtitle={`${lowConfidence.length} rows need human verification`}>
             <div className="text-ink-soft space-y-2 text-[12.5px]">

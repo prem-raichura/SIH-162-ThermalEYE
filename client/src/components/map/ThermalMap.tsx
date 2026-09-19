@@ -23,10 +23,13 @@ import {
   abnormalRingLayer,
   alertLayer,
   heatLayer,
+  incidentClusterLayer,
+  incidentIconLayer,
   landcoverLayer,
   siteLayer,
   unmappedLayer,
 } from './layers'
+import { ensureIncidentIcons } from './incidentIcons'
 import { BasemapToggle } from './BasemapToggle'
 import { LayerPanel } from './LayerPanel'
 import { ThermalLegend } from './ThermalLegend'
@@ -40,7 +43,7 @@ import {
   unmapped as allUnmapped,
   WINDOW_DAYS,
 } from '@/lib/data'
-import type { Detection, ThermalSite, UnmappedCandidate } from '@/lib/types'
+import type { Alert, Detection, ThermalSite, UnmappedCandidate } from '@/lib/types'
 import type { FeatureCollection } from 'geojson'
 import { useFilters } from '@/store/useFilters'
 import { useLayers, type LayerId } from '@/store/useLayers'
@@ -61,19 +64,27 @@ export function ThermalMap({
   role,
   sites,
   unmapped = allUnmapped,
+  alerts,
+  alertMode = 'points',
+  onAlertSelect,
   availableLayers,
-  controls = 'overlay',
-  aspect = 'square',
+  controls = true,
+  shape = 'fill',
   className,
 }: {
   role: Role
   sites: ThermalSite[]
   unmapped?: UnmappedCandidate[]
+  /** Defaults to the alerts belonging to the sites in view. */
+  alerts?: Alert[]
+  /** 'incidents' draws severity triangles that cluster at low zoom, for the response view. */
+  alertMode?: 'points' | 'incidents'
+  onAlertSelect?: (alert: Alert) => void
   availableLayers?: LayerId[]
-  /** 'below' moves the controls into a bar under the map, for small panels. */
-  controls?: 'overlay' | 'below'
-  /** Canvas shape when the controls sit below — the map sizes itself from its width. */
-  aspect?: 'square' | 'landscape' | 'tall'
+  /** Off for thumbnails: the basemap toggle, layer panel, legend and window picker are hidden. */
+  controls?: boolean
+  /** 'square' sizes the canvas from its own width, for maps in a narrow column. */
+  shape?: 'fill' | 'square'
   className?: string
 }) {
   const mapRef = useRef<MapRef>(null)
@@ -127,7 +138,11 @@ export function ThermalMap({
   )
   const siteData = useMemo(() => sitesToGeoJson(sites), [sites])
   const unmappedData = useMemo(() => unmappedToGeoJson(unmapped), [unmapped])
-  const alertData = useMemo(() => alertsToGeoJson(allAlerts.filter((a) => siteIds.has(a.siteId))), [siteIds])
+  const alertRows = useMemo(
+    () => alerts ?? allAlerts.filter((a) => siteIds.has(a.siteId)),
+    [alerts, siteIds],
+  )
+  const alertData = useMemo(() => alertsToGeoJson(alertRows), [alertRows])
 
   const landcoverData = useMemo(() => {
     const features = sites.slice(0, 400).map((s) => {
@@ -194,8 +209,14 @@ export function ThermalMap({
       logLine(role.id, `Selected unmapped candidate #${props.rank} — ${props.state}`)
       return
     }
-    if (feature.layer.id === 'alerts-circle') {
-      selectSite(props.siteId)
+    if (feature.layer.id === 'alerts-cluster') {
+      mapRef.current?.easeTo({ center: [e.lngLat.lng, e.lngLat.lat], zoom: (mapRef.current?.getZoom() ?? 4) + 2, duration: 600 })
+      return
+    }
+    if (feature.layer.id === 'alerts-circle' || feature.layer.id === 'alerts-icon') {
+      const alert = alertRows.find((a) => a.id === String(props.id))
+      if (alert && onAlertSelect) onAlertSelect(alert)
+      else selectSite(props.siteId)
       logLine(role.id, `Opened alert ${props.id} — ${props.siteName}`)
       return
     }
@@ -210,6 +231,26 @@ export function ThermalMap({
       return
     }
     const p = feature.properties as Record<string, string | number>
+    if (feature.layer.id === 'alerts-cluster') {
+      setHover({
+        lon: e.lngLat.lng,
+        lat: e.lngLat.lat,
+        title: `${p.point_count} incidents`,
+        sub: 'Zoom in to separate them',
+        readings: ['clustered below zoom 7'],
+      })
+      return
+    }
+    if (feature.layer.id === 'alerts-icon') {
+      setHover({
+        lon: e.lngLat.lng,
+        lat: e.lngLat.lat,
+        title: String(p.title ?? 'Incident'),
+        sub: `${p.siteName ?? ''} · ${p.severity ?? ''} severity`,
+        readings: [`+${p.deviationPct ?? 0}% over normal`],
+      })
+      return
+    }
     if (feature.layer.id === 'unmapped-ring') {
       setHover({
         lon: e.lngLat.lng,
@@ -229,25 +270,28 @@ export function ThermalMap({
     })
   }
 
+  const incidents = alertMode === 'incidents'
+  // In incident mode the alerts are the point of the map, so they are not behind a toggle.
+  const showAlerts = incidents || shows('alerts')
+
   const interactive = [
     shows('sites') ? 'sites-circle' : null,
     shows('unmapped') ? 'unmapped-ring' : null,
-    shows('alerts') ? 'alerts-circle' : null,
+    showAlerts && !incidents ? 'alerts-circle' : null,
+    showAlerts && incidents ? 'alerts-icon' : null,
+    showAlerts && incidents ? 'alerts-cluster' : null,
   ].filter((v): v is string => v !== null)
 
-  const overlay = controls === 'overlay'
-  const ASPECT = { square: 'aspect-square', landscape: 'aspect-[4/3]', tall: 'aspect-[3/4]' }
-
   return (
-    <div className={cn('flex min-h-0 flex-col gap-2', className)}>
-      <div
-        className={cn(
-          'relative overflow-hidden rounded-[14px]',
-          // With the controls below, the canvas takes its height from its own width so it
-          // never ends up as a letterbox strip inside a narrow column.
-          overlay ? 'h-full min-h-0 flex-1' : cn('w-full max-h-[600px] min-h-[320px]', ASPECT[aspect]),
-        )}
-      >
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-[14px]',
+        // A square canvas takes its height from its own width, so a map in a narrow column
+        // never ends up as a letterbox strip.
+        shape === 'square' ? 'aspect-square max-h-[620px] min-h-[340px] w-full' : 'h-full',
+        className,
+      )}
+    >
       <Map
         ref={mapRef}
         initialViewState={{ longitude: role.mapFocus[0], latitude: role.mapFocus[1], zoom: role.mapFocus[2] }}
@@ -267,7 +311,14 @@ export function ThermalMap({
             logLine('WARN', 'Satellite tiles unavailable — fell back to the offline basemap')
           }
         }}
-        onLoad={fitToSites}
+        onLoad={(e) => {
+          if (incidents) ensureIncidentIcons(e.target)
+          fitToSites()
+        }}
+        onStyleData={(e) => {
+          // Switching the basemap reloads the style, which drops every registered image.
+          if (incidents) ensureIncidentIcons(e.target)
+        }}
         cursor={hover ? 'pointer' : 'grab'}
         attributionControl={{ compact: true }}
         style={{ width: '100%', height: '100%' }}
@@ -332,13 +383,19 @@ export function ThermalMap({
           </Source>
         )}
 
-        {shows('alerts') && (
-          <Source id="alerts" type="geojson" data={alertData}>
-            <Layer id="alerts-circle" {...alertLayer} />
-          </Source>
-        )}
+        {showAlerts &&
+          (incidents ? (
+            <Source id="alerts" type="geojson" data={alertData} cluster clusterRadius={46} clusterMaxZoom={6}>
+              <Layer id="alerts-cluster" {...incidentClusterLayer} />
+              <Layer id="alerts-icon" {...incidentIconLayer} />
+            </Source>
+          ) : (
+            <Source id="alerts" type="geojson" data={alertData}>
+              <Layer id="alerts-circle" {...alertLayer} />
+            </Source>
+          ))}
 
-        <NavigationControl position="bottom-right" showCompass={false} />
+        {controls && <NavigationControl position="bottom-right" showCompass={false} />}
         <ScaleControl position="bottom-right" maxWidth={90} unit="metric" />
 
         {hover && (
@@ -352,7 +409,7 @@ export function ThermalMap({
         )}
       </Map>
 
-      {overlay && (
+      {controls && (
         <div className="pointer-events-none absolute inset-0 p-3">
           <div className="pointer-events-auto absolute top-3 left-3">
             <BasemapToggle />
@@ -364,18 +421,6 @@ export function ThermalMap({
             <ThermalLegend />
             <TimeWindowPicker />
           </div>
-        </div>
-      )}
-      </div>
-
-      {!overlay && (
-        <div className="bg-card border-line flex flex-col gap-2 rounded-[12px] border px-3 py-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <BasemapToggle />
-            <ThermalLegend variant="inline" />
-          </div>
-          <LayerPanel available={availableLayers} variant="chips" />
-          <TimeWindowPicker className="self-start" />
         </div>
       )}
     </div>

@@ -87,7 +87,7 @@ export function FsiAlerts({ role }: { role: Role }) {
           <ThermalMap
             role={role}
             sites={filtered}
-            controls="below"
+            shape="square"
             availableLayers={['thermal', 'sites', 'alerts', 'landcover']}
           />
           {selected ? (

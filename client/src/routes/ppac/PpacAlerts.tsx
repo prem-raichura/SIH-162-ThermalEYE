@@ -91,7 +91,7 @@ export function PpacAlerts({ role }: { role: Role }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={filtered} controls="below" availableLayers={['sites', 'thermal', 'alerts']} />
+          <ThermalMap role={role} sites={filtered} shape="square" availableLayers={['sites', 'thermal', 'alerts']} />
           <Panel title={site ? `Baseline — ${site.name}` : 'Baseline'}>
             {site ? (
               <BaselineBandChart site={site} height={190} />

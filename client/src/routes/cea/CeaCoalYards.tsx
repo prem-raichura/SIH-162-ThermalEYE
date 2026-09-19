@@ -98,7 +98,7 @@ export function CeaCoalYards({ role }: { role: Role }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={coalPlants} controls="below" availableLayers={['sites', 'thermal', 'alerts']} />
+          <ThermalMap role={role} sites={coalPlants} shape="square" availableLayers={['sites', 'thermal', 'alerts']} />
 
           {site ? (
             <Panel title={`Baseline — ${site.name}`} subtitle="Observed FRP against the station's normal range">

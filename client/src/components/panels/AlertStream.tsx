@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { AlertTriangle, Check, Flame, TreePine } from 'lucide-react'
 import type { Alert } from '@/lib/types'
 import { SEVERITY_COLOR } from '@/lib/thermal'
@@ -17,6 +18,8 @@ export function AlertStream({
   onSelect,
   selectedId,
   onAcknowledge,
+  renderActions,
+  showConfidence = false,
   limit,
   maxHeight = 360,
   fill = false,
@@ -25,6 +28,10 @@ export function AlertStream({
   onSelect?: (alert: Alert) => void
   selectedId?: string | null
   onAcknowledge?: (alert: Alert) => void
+  /** Replaces the acknowledge button, for feeds with more than one disposition. */
+  renderActions?: (alert: Alert) => ReactNode
+  /** Adds the classifier's confidence and a deviation chip to the row. */
+  showConfidence?: boolean
   limit?: number
   /** Body height in px before the stream scrolls inside itself. */
   maxHeight?: number
@@ -79,13 +86,27 @@ export function AlertStream({
                 </p>
                 <p className="text-ink-faint tnum mt-0.5 font-mono text-[11px]">
                   {alert.currentFrp} MW against a normal {alert.normalLow}–{alert.normalHigh} MW
-                  {alert.deviationPct > 0 && ` · +${alert.deviationPct}%`}
+                  {!showConfidence && alert.deviationPct > 0 && ` · +${alert.deviationPct}%`}
+                  {showConfidence && ` · confidence ${alert.confidence.toFixed(2)}`}
                 </p>
+                {showConfidence && alert.deviationPct > 0 && (
+                  <span
+                    className="tnum mt-1 inline-flex rounded-full px-1.5 py-0.5 font-mono text-[10.5px]"
+                    style={{
+                      color: SEVERITY_COLOR[alert.severity],
+                      backgroundColor: `${SEVERITY_COLOR[alert.severity]}1f`,
+                    }}
+                  >
+                    +{alert.deviationPct}% over normal
+                  </span>
+                )}
               </div>
 
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <span className="text-ink-faint tnum font-mono text-[10.5px]">{relativeTime(alert.minutesAgo)}</span>
-                {alert.status === 'acknowledged' ? (
+                {renderActions ? (
+                  renderActions(alert)
+                ) : alert.status === 'acknowledged' ? (
                   <span className="text-ink-faint inline-flex items-center gap-1 text-[10.5px]">
                     <Check size={11} /> acknowledged
                   </span>

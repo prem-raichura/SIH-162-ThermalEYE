@@ -76,7 +76,7 @@ export function CpcbSites({ role }: { role: Role }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
-          <ThermalMap role={role} sites={filtered} controls="below" />
+          <ThermalMap role={role} sites={filtered} shape="square" />
           {selected ? (
             <SiteCard site={selected} onOpenDetail={openDetail} />
           ) : (

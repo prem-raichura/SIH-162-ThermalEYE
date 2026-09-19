@@ -30,6 +30,11 @@ import { FsiAlerts } from './fsi/FsiAlerts'
 import { FsiVegetation } from './fsi/FsiVegetation'
 import { FsiSeasonal } from './fsi/FsiSeasonal'
 import { FsiReports } from './fsi/FsiReports'
+import { NdmaLiveAlerts } from './ndma/NdmaLiveAlerts'
+import { NdmaIncidents } from './ndma/NdmaIncidents'
+import { NdmaSeverity } from './ndma/NdmaSeverity'
+import { NdmaAnalytics } from './ndma/NdmaAnalytics'
+import { NdmaReports } from './ndma/NdmaReports'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -78,6 +83,13 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     vegetation: FsiVegetation,
     seasonal: FsiSeasonal,
     reports: FsiReports,
+  },
+  ndma: {
+    '': NdmaLiveAlerts,
+    incidents: NdmaIncidents,
+    severity: NdmaSeverity,
+    analytics: NdmaAnalytics,
+    reports: NdmaReports,
   },
 }
 
