@@ -321,7 +321,10 @@ export function ThermalMap({
         }}
         cursor={hover ? 'pointer' : 'grab'}
         attributionControl={{ compact: true }}
-        style={{ width: '100%', height: '100%' }}
+        // Absolute rather than height:100%. Where the wrapper takes its height from a
+        // min-height inside an auto-height flex column, a percentage height has nothing
+        // definite to resolve against and collapses the canvas to zero.
+        style={{ position: 'absolute', inset: 0 }}
       >
         {statesGeo && (
           <Source id="states" type="geojson" data={statesGeo}>
