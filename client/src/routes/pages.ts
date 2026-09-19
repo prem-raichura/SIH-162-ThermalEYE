@@ -35,6 +35,11 @@ import { NdmaIncidents } from './ndma/NdmaIncidents'
 import { NdmaSeverity } from './ndma/NdmaSeverity'
 import { NdmaAnalytics } from './ndma/NdmaAnalytics'
 import { NdmaReports } from './ndma/NdmaReports'
+import { NrscLayer } from './nrsc/NrscLayer'
+import { NrscProvenance } from './nrsc/NrscProvenance'
+import { NrscQuality } from './nrsc/NrscQuality'
+import { NrscExport } from './nrsc/NrscExport'
+import { NrscReports } from './nrsc/NrscReports'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -90,6 +95,13 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     severity: NdmaSeverity,
     analytics: NdmaAnalytics,
     reports: NdmaReports,
+  },
+  nrsc: {
+    '': NrscLayer,
+    provenance: NrscProvenance,
+    quality: NrscQuality,
+    export: NrscExport,
+    reports: NrscReports,
   },
 }
 

@@ -1011,6 +1011,19 @@ write(OUT, 'meta.json', {
     states: statesSlim.features.length,
     districts: districtsSlim.features.length,
   },
+  // The measured FIRMS holding, read from dataset/SOURCES.md. NRSC republishes the layer,
+  // so the acquisition inventory and its quality caveat travel with it.
+  firms: {
+    totalDetections: 9275873,
+    satellites: [
+      { satellite: 'MODIS (Terra + Aqua)', instrument: 'MODIS', years: '2020–2026', detections: 538564, quality: 'standard' },
+      { satellite: 'VIIRS S-NPP', instrument: 'VIIRS', years: '2020–2026', detections: 3754431, quality: 'standard' },
+      { satellite: 'VIIRS NOAA-20', instrument: 'VIIRS', years: '2020–2026', detections: 3816642, quality: 'standard' },
+      { satellite: 'VIIRS NOAA-21', instrument: 'VIIRS', years: '2024–2026', detections: 1166236, quality: 'nrt' },
+    ],
+    note: 'NOAA-21 begins 2024-01-17 because JPSS-2 data became available then; that is not a collection gap. Its files are fire_nrt_*, every other file is fire_archive_*.',
+    caveat: 'Per the NASA README, standard-quality data is not yet available for NOAA-20 and NOAA-21, so J1V/J2V files are NRT while MODIS and S-NPP archive files are standard. The two differ in confidence semantics and FRP: baseline and train on standard, use NOAA-20/21 for temporal coverage.',
+  },
   realSources: {
     firmsDetections: 9275873,
     osmUsableFacilities: 19475,

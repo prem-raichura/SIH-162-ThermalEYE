@@ -1,4 +1,4 @@
-import type { SourceClass } from './types'
+import type { RegisterSource, SourceClass } from './types'
 
 export const CLASS_LABELS: Record<SourceClass, string> = {
   refinery: 'Refinery',
@@ -17,4 +17,14 @@ export const CLASS_LABELS: Record<SourceClass, string> = {
   waste_fire: 'Waste Fire',
   other_unknown: 'Other / Unknown',
   nonthermal_control: 'Non-thermal Control',
+}
+
+/** How each register is named on screen. `none` means no facility record joined at all. */
+export const REGISTER_LABEL: Record<RegisterSource, string> = {
+  osm: 'OpenStreetMap',
+  ppac: 'PPAC',
+  wri: 'WRI',
+  gem: 'GEM',
+  cea: 'CEA',
+  none: 'No register',
 }

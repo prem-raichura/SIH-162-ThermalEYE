@@ -337,12 +337,28 @@ export interface SourceReport {
   milestones: Milestone[]
 }
 
+export interface FirmsSatellite {
+  satellite: string
+  instrument: string
+  years: string
+  detections: number
+  quality: DataQuality
+}
+
+export interface FirmsInventory {
+  totalDetections: number
+  satellites: FirmsSatellite[]
+  note: string
+  caveat: string
+}
+
 export interface Meta {
   generatedFrom: string
   seed: string
   windowStart: string
   windowEnd: string
   counts: Record<string, number>
+  firms: FirmsInventory
   realSources: Record<string, number>
 }
 

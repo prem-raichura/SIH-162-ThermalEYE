@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Columns3 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { ThermalSite } from '@/lib/types'
 import { CLASS_COLOR, tHotColor } from '@/lib/thermal'
 import { coord, days, megawatt, nf, shortDate } from '@/lib/format'
@@ -165,6 +166,88 @@ const COLUMNS: Record<ColumnId, Column> = {
     sort: (s) => s.lat,
     render: (s) => coord(s.lat, s.lon),
   },
+}
+
+/**
+ * Canonical column order. The chooser rebuilds the selection in this order so switching a
+ * column on never reshuffles the ones already there.
+ */
+const COLUMN_ORDER: ColumnId[] = [
+  'name',
+  'class',
+  'state',
+  'operator',
+  'capacity',
+  'fuel',
+  'status',
+  'confidence',
+  'tHot',
+  'deltaT',
+  'frpMean',
+  'frpPeak',
+  'frpDensity',
+  'nightRatio',
+  'saturation',
+  'detections',
+  'activeDays',
+  'persistence',
+  'frpSlope',
+  'lastDetection',
+  'coverage',
+  'coords',
+]
+
+/** Picks the columns a table shows. The identity column is fixed — a published row needs a name. */
+export function ColumnChooser({ value, onChange }: { value: ColumnId[]; onChange: (ids: ColumnId[]) => void }) {
+  const toggle = (id: ColumnId) => {
+    if (id === 'name') return
+    const next = new Set(value)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onChange(COLUMN_ORDER.filter((c) => next.has(c)))
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="border-line hover:border-ink-faint inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px]"
+        >
+          <Columns3 size={13} strokeWidth={1.8} />
+          Columns
+          <span className="tnum font-mono">{value.length}</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[210px] p-1.5">
+        <ul className="panel-scroll max-h-[320px] overflow-y-auto overscroll-contain">
+          {COLUMN_ORDER.map((id) => {
+            const on = value.includes(id)
+            const locked = id === 'name'
+            return (
+              <li key={id}>
+                <button
+                  type="button"
+                  onClick={() => toggle(id)}
+                  disabled={locked}
+                  className={cn(
+                    'flex w-full items-center gap-2 rounded-[7px] px-2 py-1.5 text-left text-[12.5px]',
+                    locked ? 'text-ink-faint cursor-default' : 'hover:bg-paper-deep',
+                  )}
+                >
+                  <span className="grid h-3.5 w-3.5 place-items-center">
+                    {on && <Check size={13} strokeWidth={2.2} />}
+                  </span>
+                  {COLUMNS[id].label}
+                  {locked && <span className="text-ink-faint ml-auto text-[10.5px]">fixed</span>}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </PopoverContent>
+    </Popover>
+  )
 }
 
 /** Temperature follows the unit chosen in Settings; the colour always follows the ramp. */
