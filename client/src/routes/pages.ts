@@ -6,6 +6,12 @@ import { CpcbUnmapped } from './cpcb/CpcbUnmapped'
 import { CpcbCoverage } from './cpcb/CpcbCoverage'
 import { CpcbReports } from './cpcb/CpcbReports'
 import { CpcbSettings } from './cpcb/CpcbSettings'
+import { PpacOverview } from './ppac/PpacOverview'
+import { PpacFlares } from './ppac/PpacFlares'
+import { PpacGas } from './ppac/PpacGas'
+import { PpacAnalysis } from './ppac/PpacAnalysis'
+import { PpacAlerts } from './ppac/PpacAlerts'
+import { PpacReports } from './ppac/PpacReports'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -21,6 +27,14 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     coverage: CpcbCoverage,
     reports: CpcbReports,
     settings: CpcbSettings,
+  },
+  ppac: {
+    '': PpacOverview,
+    flares: PpacFlares,
+    gas: PpacGas,
+    analysis: PpacAnalysis,
+    alerts: PpacAlerts,
+    reports: PpacReports,
   },
 }
 
