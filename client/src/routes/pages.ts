@@ -12,6 +12,13 @@ import { PpacGas } from './ppac/PpacGas'
 import { PpacAnalysis } from './ppac/PpacAnalysis'
 import { PpacAlerts } from './ppac/PpacAlerts'
 import { PpacReports } from './ppac/PpacReports'
+import { CeaOverview } from './cea/CeaOverview'
+import { CeaPlants } from './cea/CeaPlants'
+import { CeaCoalYards } from './cea/CeaCoalYards'
+import { CeaBaselines } from './cea/CeaBaselines'
+import { CeaAlerts } from './cea/CeaAlerts'
+import { CeaHistorical } from './cea/CeaHistorical'
+import { CeaReports } from './cea/CeaReports'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -35,6 +42,15 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     analysis: PpacAnalysis,
     alerts: PpacAlerts,
     reports: PpacReports,
+  },
+  cea: {
+    '': CeaOverview,
+    plants: CeaPlants,
+    'coal-yards': CeaCoalYards,
+    baselines: CeaBaselines,
+    alerts: CeaAlerts,
+    historical: CeaHistorical,
+    reports: CeaReports,
   },
 }
 
