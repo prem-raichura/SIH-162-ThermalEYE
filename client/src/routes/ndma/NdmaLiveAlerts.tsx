@@ -85,7 +85,7 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
         onAction={() => {
           const target = feed.selected?.siteId ?? feed.active[0]?.siteId ?? null
           setReportFor(target)
-          logLine(role.id, 'Evidence report opened from the live feed')
+          logLine(role.id, 'Evidence report generated from the live feed')
         }}
       />
 

@@ -12,6 +12,7 @@ import {
   ZAxis,
 } from 'recharts'
 import { AXIS, CHART_CATEGORICAL, TOOLTIP_STYLE } from '@/lib/chart'
+import { ChartFigure } from './ChartFigure'
 import type { ThermalSite } from '@/lib/types'
 import { nf } from '@/lib/format'
 
@@ -43,8 +44,32 @@ export function SeparationScatter({
   const misread = vegetationPoints.filter((p) => p.x > boundary).length
   const shareClean = 1 - misread / Math.max(vegetationPoints.length, 1)
 
+  // The scatter carries the separation claim, so the same split is available as counts for
+  // anyone who cannot read the plot.
+  const band = (points: { x: number }[], from: number, to: number) =>
+    points.filter((p) => p.x >= from && p.x < to).length
+  const BANDS: [number, number][] = [
+    [0, 15],
+    [15, boundary],
+    [boundary, 45],
+    [45, 60],
+    [60, Number.POSITIVE_INFINITY],
+  ]
+
   return (
-    <div>
+    <ChartFigure
+      label="Dual-band contrast against scan-normalised intensity"
+      summary={`Each point is one site: dual-band contrast in kelvin across, FRP density in megawatts per square kilometre up. At the ${boundary} K boundary, ${nf(shareClean * 100, 0)} percent of ${nf(vegetationPoints.length, 0)} vegetation burns fall below it and most of the ${nf(industrialPoints.length, 0)} industrial sources fall above it.`}
+      table={{
+        caption: `Sites per ΔT band. The stated boundary is ${boundary} K.`,
+        columns: ['ΔT band', 'Vegetation burns', 'Industrial sources'],
+        rows: BANDS.map(([from, to]) => [
+          to === Number.POSITIVE_INFINITY ? `${from} K and above` : `${from}–${to} K`,
+          band(vegetationPoints, from, to),
+          band(industrialPoints, from, to),
+        ]),
+      }}
+    >
       <ResponsiveContainer width="100%" height={height}>
         <ScatterChart margin={{ top: 8, right: 12, bottom: 18, left: -8 }}>
           <CartesianGrid {...AXIS.grid} />
@@ -126,6 +151,6 @@ export function SeparationScatter({
         Both axes are retrieved from the FIRMS dual-band signal. Neither uses a facility map, so this separation is
         measured rather than assumed.
       </p>
-    </div>
+    </ChartFigure>
   )
 }

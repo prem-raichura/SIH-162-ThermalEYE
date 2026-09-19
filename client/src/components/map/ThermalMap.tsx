@@ -50,6 +50,7 @@ import { useLayers, type LayerId } from '@/store/useLayers'
 import { logLine } from '@/store/useConsole'
 import type { Role } from '@/lib/roles'
 import { cn } from '@/lib/utils'
+import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
 import { kelvin, megawatt } from '@/lib/format'
 
 interface HoverInfo {
@@ -92,6 +93,7 @@ export function ThermalMap({
   const [statesGeo, setStatesGeo] = useState<FeatureCollection | null>(null)
   const [districtsGeo, setDistrictsGeo] = useState<FeatureCollection | null>(null)
   const [hover, setHover] = useState<HoverInfo | null>(null)
+  const reducedMotion = usePrefersReducedMotion()
 
   const window = useFilters((s) => s.window)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -194,8 +196,12 @@ export function ThermalMap({
   useEffect(() => {
     const target = selected ?? selectedUnmapped
     if (!target || !mapRef.current) return
-    mapRef.current.easeTo({ center: [target.lon, target.lat], zoom: Math.max(mapRef.current.getZoom(), 8.5), duration: 900 })
-  }, [selected, selectedUnmapped])
+    mapRef.current.easeTo({
+      center: [target.lon, target.lat],
+      zoom: Math.max(mapRef.current.getZoom(), 8.5),
+      duration: reducedMotion ? 0 : 900,
+    })
+  }, [selected, selectedUnmapped, reducedMotion])
 
   const onClick = (e: MapLayerMouseEvent) => {
     const feature = e.features?.[0]
@@ -210,7 +216,11 @@ export function ThermalMap({
       return
     }
     if (feature.layer.id === 'alerts-cluster') {
-      mapRef.current?.easeTo({ center: [e.lngLat.lng, e.lngLat.lat], zoom: (mapRef.current?.getZoom() ?? 4) + 2, duration: 600 })
+      mapRef.current?.easeTo({
+        center: [e.lngLat.lng, e.lngLat.lat],
+        zoom: (mapRef.current?.getZoom() ?? 4) + 2,
+        duration: reducedMotion ? 0 : 600,
+      })
       return
     }
     if (feature.layer.id === 'alerts-circle' || feature.layer.id === 'alerts-icon') {
@@ -283,12 +293,17 @@ export function ThermalMap({
   ].filter((v): v is string => v !== null)
 
   return (
-    <div
+    <section
+      aria-label={`${role.short} thermal map — ${sites.length} sites in view. The site table below lists every one of them.`}
       className={cn(
         'relative overflow-hidden rounded-[14px]',
         // A square canvas takes its height from its own width, so a map in a narrow column
         // never ends up as a letterbox strip.
-        shape === 'square' ? 'aspect-square max-h-[620px] min-h-[340px] w-full' : 'h-full',
+        // A square canvas below the compact breakpoint would be taller than the viewport,
+        // so it becomes a fixed-height band like every other map there.
+        shape === 'square'
+          ? 'h-[420px] w-full xl:aspect-square xl:h-auto xl:max-h-[620px] xl:min-h-[340px]'
+          : 'h-full',
         className,
       )}
     >
@@ -426,6 +441,6 @@ export function ThermalMap({
           </div>
         </div>
       )}
-    </div>
+    </section>
   )
 }

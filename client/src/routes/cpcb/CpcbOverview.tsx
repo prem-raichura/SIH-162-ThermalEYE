@@ -72,7 +72,7 @@ export function CpcbOverview({ role }: { role: Role }) {
         onAction={() => {
           const target = selectedSiteId ?? filtered[0]?.id ?? null
           setReportFor(target)
-          logLine(role.id, 'Evidence report opened from the overview')
+          logLine(role.id, 'Evidence report generated from the overview')
         }}
       />
 
@@ -107,7 +107,7 @@ export function CpcbOverview({ role }: { role: Role }) {
       </div>
 
       <div className="grid gap-3 xl:grid-cols-[1.55fr_1fr]">
-        <ThermalMap role={role} sites={filtered} unmapped={unmapped} className="min-h-[520px]" />
+        <ThermalMap role={role} sites={filtered} unmapped={unmapped} className="h-[420px] xl:h-[560px]" />
 
         <div className="flex min-w-0 flex-col gap-3">
           <Panel title="Facilities by type" subtitle="Predicted class across the sites in view">

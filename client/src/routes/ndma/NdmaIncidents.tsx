@@ -87,7 +87,7 @@ export function NdmaIncidents({ role }: { role: Role }) {
           alerts={feed.visible}
           alertMode="incidents"
           availableLayers={['thermal', 'sites', 'boundary', 'districts']}
-          className="min-h-[620px]"
+          className="h-[420px] xl:h-[620px]"
           onAlertSelect={(alert) => {
             selectAlert(alert.id)
             selectSite(alert.siteId)

@@ -127,7 +127,7 @@ export function SectionScaffold({
         />
       </div>
 
-      <ThermalMap role={role} sites={sites} className="min-h-[460px]" />
+      <ThermalMap role={role} sites={sites} className="h-[420px] xl:h-[500px]" />
 
       <div className="grid gap-3 xl:grid-cols-[1.4fr_1fr]">
         <Panel title="Sites" subtitle="Select a row to fly the map and fill the card beside it">

@@ -31,7 +31,10 @@ export function DistributionDonut({
     <div className="flex items-center gap-5">
       <div className="relative shrink-0" style={{ width: height, height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          {/* Recharts puts role="application" and a tab stop on its own surface. The legend
+              beside the donut already carries every label and count, so the graphic is
+              marked presentational rather than made a second, unlabelled tab stop. */}
+          <PieChart accessibilityLayer={false} role="presentation" tabIndex={-1}>
             <Pie
               data={slices}
               dataKey="value"
@@ -39,6 +42,9 @@ export function DistributionDonut({
               innerRadius="62%"
               outerRadius="96%"
               paddingAngle={2}
+              // Recharts still tab-stops the <g> layer, so it is taken out explicitly.
+              tabIndex={-1}
+              rootTabIndex={-1}
               stroke="var(--color-card)"
               strokeWidth={2}
               isAnimationActive={false}

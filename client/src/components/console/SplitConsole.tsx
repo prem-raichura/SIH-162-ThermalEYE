@@ -4,6 +4,7 @@ import { LogStream } from './LogStream'
 import { LiveStatus } from './LiveStatus'
 import { useConsole } from '@/store/useConsole'
 import { ROLE_LIST, type Role } from '@/lib/roles'
+import { useIsCompact, useIsMobile } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/utils'
 
 const HEADER_H = 40
@@ -18,6 +19,8 @@ export function SplitConsole({ role }: { role: Role }) {
   const { lines, filter, autoScroll, collapsed, height } = useConsole()
   const { clear, setFilter, setAutoScroll, setCollapsed, setHeight } = useConsole()
   const dragFrom = useRef<{ y: number; h: number } | null>(null)
+  const isMobile = useIsMobile()
+  const isCompact = useIsCompact()
 
   const visible = useMemo(
     () => (filter === 'all' ? lines : lines.filter((l) => l.tag === filter)),
@@ -26,7 +29,8 @@ export function SplitConsole({ role }: { role: Role }) {
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (collapsed) return
+      // Dragging a 40px strip on a phone fights the page scroll, so there it only toggles.
+      if (collapsed || window.matchMedia('(max-width: 767px)').matches) return
       e.currentTarget.setPointerCapture(e.pointerId)
       dragFrom.current = { y: e.clientY, h: height }
       document.body.style.userSelect = 'none'
@@ -66,7 +70,7 @@ export function SplitConsole({ role }: { role: Role }) {
   return (
     <section
       aria-label="Split console"
-      className="bg-con-bg text-con-text flex shrink-0 flex-col overflow-hidden"
+      className="console-surface bg-con-bg text-con-text flex shrink-0 flex-col overflow-hidden"
       style={{ height: collapsed ? HEADER_H : Math.max(MIN_H, height) }}
     >
       {/* The whole header is the resize handle — a 4px strip is too small to hit reliably. */}
@@ -80,8 +84,8 @@ export function SplitConsole({ role }: { role: Role }) {
         aria-orientation="horizontal"
         aria-label="Resize console"
         className={cn(
-          'flex h-[40px] shrink-0 touch-none items-center px-4 select-none',
-          collapsed ? 'cursor-pointer' : 'cursor-ns-resize',
+          'flex h-[40px] shrink-0 touch-none items-center px-3 select-none md:px-4',
+          collapsed || isMobile ? 'cursor-pointer' : 'cursor-ns-resize',
         )}
       >
         <span className="bg-con-line mr-3 h-0.5 w-8 rounded-full" aria-hidden="true" />
@@ -102,10 +106,18 @@ export function SplitConsole({ role }: { role: Role }) {
 
       {!collapsed && (
         <div
-          className="grid min-h-0 flex-1 gap-3 px-4 pb-3"
-          style={{ gridTemplateColumns: 'minmax(0,180px) minmax(0,1fr) 220px 128px' }}
+          className="grid min-h-0 flex-1 gap-3 px-3 pb-3 md:px-4"
+          style={{
+            // The source list and the status panel are the first things to go: the log
+            // itself is what the operator is reading.
+            gridTemplateColumns: isMobile
+              ? 'minmax(0,1fr)'
+              : isCompact
+                ? 'minmax(0,1fr) 128px'
+                : 'minmax(0,180px) minmax(0,1fr) 220px 128px',
+          }}
         >
-          <ul className="console-scroll overflow-y-auto overscroll-contain pr-1">
+          <ul className={cn('console-scroll overflow-y-auto overscroll-contain pr-1', isCompact && 'hidden')}>
             <li>
               <SourceRow label="Overview" active={filter === 'all'} onClick={() => setFilter('all')} />
             </li>
@@ -125,9 +137,9 @@ export function SplitConsole({ role }: { role: Role }) {
             <LogStream lines={visible} autoScroll={autoScroll} />
           </div>
 
-          <LiveStatus role={role} lineCount={lines.length} />
+          {!isCompact && <LiveStatus role={role} lineCount={lines.length} />}
 
-          <div className="flex flex-col gap-2">
+          <div className={cn('flex flex-col gap-2', isMobile && 'hidden')}>
             <ConsoleButton icon={Eraser} label="Clear" onClick={clear} />
             <ConsoleButton icon={Download} label="Export" onClick={exportLog} />
             <button

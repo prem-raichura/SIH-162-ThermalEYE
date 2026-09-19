@@ -54,7 +54,7 @@ export function IbmOverview({ role }: { role: Role }) {
         onAction={() => {
           const target = selectedSiteId ?? filtered[0]?.id ?? null
           setReportFor(target)
-          logLine(role.id, 'Evidence report opened from the overview')
+          logLine(role.id, 'Evidence report generated from the overview')
         }}
       />
 
@@ -82,7 +82,7 @@ export function IbmOverview({ role }: { role: Role }) {
         />
       </div>
 
-      <ThermalMap role={role} sites={filtered} unmapped={candidates} className="min-h-[520px]" />
+      <ThermalMap role={role} sites={filtered} unmapped={candidates} className="h-[420px] xl:h-[560px]" />
 
       <div className="grid gap-3 xl:grid-cols-[1.5fr_1fr]">
         <div className="relative min-h-[380px]">

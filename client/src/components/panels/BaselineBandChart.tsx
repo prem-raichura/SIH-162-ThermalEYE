@@ -13,6 +13,7 @@ import { AXIS, MARK, STATUS, TOOLTIP_STYLE } from '@/lib/chart'
 import { expandSeries, loadTimeseries } from '@/lib/data'
 import type { SiteSeries, ThermalSite } from '@/lib/types'
 import { EmptyState } from './EmptyState'
+import { ChartFigure } from './ChartFigure'
 
 /**
  * A site against its own history (section 18): the shaded band is that site's normal p10-p90
@@ -53,8 +54,21 @@ export function BaselineBandChart({ site, height = 210 }: { site: ThermalSite; h
   const tickFmt = (iso: string) =>
     new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-IN', { month: 'short', timeZone: 'UTC' })
 
+  const last = data.at(-1)
+  const summary = last
+    ? `Weekly mean fire radiative power for ${site.name} against the band this site normally sits in. The most recent week reads ${last.frp} megawatts against a normal ${last.low} to ${last.high}.`
+    : `Weekly mean fire radiative power for ${site.name} against the band this site normally sits in.`
+
   return (
-    <div>
+    <ChartFigure
+      label="Observed FRP against this site's own normal range"
+      summary={summary}
+      table={{
+        caption: `Weekly means for ${site.name}, in megawatts.`,
+        columns: ['Week of', 'Observed FRP', 'Normal low', 'Normal high'],
+        rows: data.map((w) => [w.date, w.frp, w.low, w.high]),
+      }}
+    >
       <div className="text-ink-soft mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px]">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2 w-4 rounded-sm" style={{ background: 'var(--color-slate-dim)' }} />
@@ -143,6 +157,6 @@ export function BaselineBandChart({ site, height = 210 }: { site: ThermalSite; h
           <dd>{site.deviationPct > 0 ? `+${site.deviationPct}%` : 'within range'}</dd>
         </div>
       </dl>
-    </div>
+    </ChartFigure>
   )
 }

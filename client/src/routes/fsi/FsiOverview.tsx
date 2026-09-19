@@ -45,7 +45,7 @@ export function FsiOverview({ role }: { role: Role }) {
         onAction={() => {
           const target = selectedSiteId ?? filtered[0]?.id ?? null
           setReportFor(target)
-          logLine(role.id, 'Evidence report opened from the overview')
+          logLine(role.id, 'Evidence report generated from the overview')
         }}
       />
 
@@ -75,7 +75,7 @@ export function FsiOverview({ role }: { role: Role }) {
         <SeparationScatter industrial={industrial} vegetation={filtered} boundary={DELTA_T_BOUNDARY} />
       </Panel>
 
-      <ThermalMap role={role} sites={filtered} className="min-h-[520px]" availableLayers={['thermal', 'sites', 'landcover', 'districts']} />
+      <ThermalMap role={role} sites={filtered} className="h-[420px] xl:h-[560px]" availableLayers={['thermal', 'sites', 'landcover', 'districts']} />
 
       <div className="grid gap-3 xl:grid-cols-[1.5fr_1fr]">
         <div className="relative min-h-[380px]">

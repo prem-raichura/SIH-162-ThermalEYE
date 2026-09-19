@@ -137,6 +137,29 @@
     border-radius: 3px;
   }
 
+  /* The role accent is chosen against paper, so on the near-black console it can fall below
+     AA. Inside the console the ring switches to a light one that always reads. */
+  .console-surface :focus-visible {
+    outline-color: var(--color-con-text);
+  }
+
+  /* Skip link: off-screen until focused, then a real control at the top of the page. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 100;
+  }
+  .skip-link:focus {
+    left: 0.75rem;
+    top: 0.75rem;
+    background: var(--color-card);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    font-size: 13px;
+  }
+
   .tnum {
     font-variant-numeric: tabular-nums;
   }

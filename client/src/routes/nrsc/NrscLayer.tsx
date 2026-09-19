@@ -50,7 +50,7 @@ export function NrscLayer({ role }: { role: Role }) {
         action="Generate report"
         onAction={() => {
           setReportFor(selectedSiteId ?? filtered[0]?.id ?? null)
-          logLine(role.id, 'Evidence report opened from the site layer')
+          logLine(role.id, 'Evidence report generated from the site layer')
         }}
       />
 
@@ -88,7 +88,7 @@ export function NrscLayer({ role }: { role: Role }) {
       <ThermalMap
         role={role}
         sites={filtered}
-        className="min-h-[520px]"
+        className="h-[420px] xl:h-[560px]"
         availableLayers={['thermal', 'sites', 'unmapped', 'boundary', 'landcover', 'districts']}
       />
 
