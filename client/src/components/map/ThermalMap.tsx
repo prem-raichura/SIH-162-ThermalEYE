@@ -432,12 +432,14 @@ export function ThermalMap({
           <div className="pointer-events-auto absolute top-3 left-3">
             <BasemapToggle />
           </div>
-          <div className="pointer-events-auto absolute top-3 right-3 w-[188px]">
+          <div className="pointer-events-auto absolute top-3 right-3 w-[190px]">
             <LayerPanel available={availableLayers} />
           </div>
-          <div className="pointer-events-auto absolute bottom-3 left-3 flex flex-col gap-2">
-            <ThermalLegend />
+          {/* One row of chrome along the bottom: the window first, the scale that reads it
+              next to it, wrapping only when the map is too narrow to hold both. */}
+          <div className="pointer-events-auto absolute bottom-10 left-3 flex max-w-[calc(100%-7.5rem)] flex-wrap items-center gap-2">
             <TimeWindowPicker />
+            <ThermalLegend />
           </div>
         </div>
       )}

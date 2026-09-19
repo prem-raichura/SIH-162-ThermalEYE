@@ -32,10 +32,10 @@ node scripts/build-static-data.mjs   # regenerate every JSON from ../../dataset
 The generator is seeded at `0x5EED162`. Running it twice produces byte-identical files, so the
 demo is the same on every machine and in every run.
 
-**Offline.** The only network request the app can make is the optional satellite basemap, and
-only after you switch it on. Fonts, boundaries and every data file are served from this origin.
-With the network off, the GADM basemap, every layer, every chart and every table still work,
-and the satellite toggle falls back to the offline basemap with a console line saying so.
+**Offline.** Maps open on satellite imagery, which is the one thing that needs a connection.
+Fonts, boundaries and every data file are served from this origin. With the network off the
+tiles fail, the map falls back to the offline GADM basemap and says so — in the console and on
+a chip beside the toggle — and every layer, chart and table keeps working.
 
 ---
 

@@ -38,7 +38,10 @@ export const useLayers = create<LayerState>((set) => ({
     landcover: false,
     districts: false,
   },
-  basemap: 'offline',
+  // Satellite is the default view: imagery is what makes a thermal site legible as a place.
+  // It needs a connection, and when the tiles fail the map falls back to the offline
+  // basemap and says so, so the app still works with no network at all.
+  basemap: 'satellite',
   tilesFailed: false,
   toggle: (id) => set((s) => ({ visible: { ...s.visible, [id]: !s.visible[id] } })),
   setVisible: (next) => set((s) => ({ visible: { ...s.visible, ...next } })),
