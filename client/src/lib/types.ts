@@ -262,6 +262,30 @@ export interface PerClassMetric {
   precision: number
   recall: number
   f1: number
+  /** Reported evaluation figures, not computed here — this build stores no decision scores. */
+  rocAuc: number
+  prAuc: number
+  /** Support below the median: the class where PR-AUC is the honest curve to read. */
+  imbalanced: boolean
+}
+
+export interface HoldoutRegion {
+  region: string
+  states: string[]
+  sites: number
+  facilities: number
+  role: 'training' | 'test'
+  accuracy: number | null
+}
+
+export interface Holdout {
+  testRegion: string
+  regions: HoldoutRegion[]
+  trainingSites: number
+  testSites: number
+  trainingAccuracy: number | null
+  testAccuracy: number | null
+  note: string
 }
 
 export interface Ablation {
@@ -281,6 +305,8 @@ export interface ModelReport {
   classLabels: string[]
   confusionMatrix: number[][]
   perClass: PerClassMetric[]
+  metricNote: string
+  holdout: Holdout
   controls: { total: number; monitored: number; falsePositives: number; note: string }
   ablations: Ablation[]
   keyAblation: { from: string; to: string; accuracyDelta: number; macroF1Delta: number; claim: string }

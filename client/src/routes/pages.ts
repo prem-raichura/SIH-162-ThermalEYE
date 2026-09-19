@@ -40,6 +40,12 @@ import { NrscProvenance } from './nrsc/NrscProvenance'
 import { NrscQuality } from './nrsc/NrscQuality'
 import { NrscExport } from './nrsc/NrscExport'
 import { NrscReports } from './nrsc/NrscReports'
+import { AdminPerformance } from './admin/AdminPerformance'
+import { AdminAblations } from './admin/AdminAblations'
+import { AdminValidation } from './admin/AdminValidation'
+import { AdminSources } from './admin/AdminSources'
+import { AdminHoldout } from './admin/AdminHoldout'
+import { AdminSystem } from './admin/AdminSystem'
 
 export type RolePage = ComponentType<{ role: Role }>
 
@@ -102,6 +108,14 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     quality: NrscQuality,
     export: NrscExport,
     reports: NrscReports,
+  },
+  admin: {
+    '': AdminPerformance,
+    ablations: AdminAblations,
+    validation: AdminValidation,
+    sources: AdminSources,
+    holdout: AdminHoldout,
+    system: AdminSystem,
   },
 }
 
