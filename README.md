@@ -26,9 +26,9 @@
 
 <div align="center">
 
-| FIRMS detections | Thermal sites | Unmapped candidates | Macro-F1 |
-|:---:|:---:|:---:|:---:|
-| **9,275,873** | **984** | **120** | **0.902** |
+| FIRMS detections | Thermal sites | Unmapped candidates |
+|:---:|:---:|:---:|
+| **9,275,873** | **984** | **120** |
 
 </div>
 
@@ -324,7 +324,7 @@ measurement — **where a number is a stand-in, the page says so**.
 
 ---
 
-## 🚫 Non-claims (§32)
+## 🚫 Non-claims 
 
 The system does **not** claim that:
 
@@ -390,12 +390,6 @@ client/
 └── scripts/
     └── build-static-data.mjs   the fixed-seed generator
 ```
-
-**Performance.** All 50 pages are code-split — the entry chunk is **517 KB across 91 chunks**, so
-a role downloads only the sections it opens. The heaviest files (detections 998 KB, timeseries
-1.45 MB, districts 1.16 MB) are fetched on demand rather than bundled, each behind a loader with a
-retry. The map style carries **no external sources**: boundary geometry is fetched by the app and
-handed to MapLibre as objects, which is exactly what keeps the offline path working.
 
 ---
 
