@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Check, X } from 'lucide-react'
 import { PageHeader } from '@/components/shell/PageHeader'
 import { Panel } from '@/components/panels/Panel'
@@ -11,6 +11,11 @@ import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import { loadDetections, validation } from '@/lib/data'
 import type { Detection } from '@/lib/types'
+import { useAsyncData } from '@/hooks/useAsyncData'
+
+/** One frozen empty array, so a pending load does not re-key every memo below it. */
+const NO_DETECTIONS: Detection[] = []
+import { PanelLoader } from '@/components/shell/Loader'
 import { nf, pct } from '@/lib/format'
 import { CalendarClock, PlugZap, Power } from 'lucide-react'
 import { STATUS } from '@/lib/chart'
@@ -33,10 +38,8 @@ export function CeaHistorical({ role }: { role: Role }) {
 
   // Counted from the detection records themselves rather than modelled, so the shape is
   // whatever the FIRMS passes actually did over these stations.
-  const [detections, setDetections] = useState<Detection[]>([])
-  useEffect(() => {
-    loadDetections().then(setDetections)
-  }, [])
+  const { data: loaded, pending, error, retry } = useAsyncData(loadDetections, 'Detection records')
+  const detections = loaded ?? NO_DETECTIONS
 
   const seasonal = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -86,9 +89,19 @@ export function CeaHistorical({ role }: { role: Role }) {
 
       <Panel
         title="Fleet seasonality"
-        subtitle={`Detections per month across the stations in view — ${nf(detections.filter((d) => d.siteId !== null).length)} records sampled`}
+        subtitle={
+          pending
+            ? 'Detections per month across the stations in view'
+            : `Detections per month across the stations in view — ${nf(
+                detections.filter((d) => d.siteId !== null).length,
+              )} records sampled`
+        }
       >
-        <TrendChart data={seasonal} xKey="month" series={[{ key: 'detections', label: 'Detections' }]} height={200} />
+        {pending || error ? (
+          <PanelLoader height={200} label="Loading detections" error={error} onRetry={retry} />
+        ) : (
+          <TrendChart data={seasonal} xKey="month" series={[{ key: 'detections', label: 'Detections' }]} height={200} />
+        )}
       </Panel>
 
       <Panel

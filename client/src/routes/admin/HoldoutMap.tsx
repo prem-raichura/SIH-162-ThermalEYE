@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Map, { Layer, NavigationControl, Popup, Source, type MapLayerMouseEvent } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import type { FeatureCollection } from 'geojson'
 import { INDIA_BOUNDS, offlineStyle } from '@/lib/mapStyle'
 import { loadStates, model } from '@/lib/data'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { LoadingOverlay } from '@/components/shell/Loader'
 import { logLine } from '@/store/useConsole'
 import { nf, pct } from '@/lib/format'
 import type { RoleId } from '@/lib/roles'
@@ -29,14 +30,10 @@ interface Hover {
  * points taken from facilities the model already learned.
  */
 export function HoldoutMap({ role }: { role: RoleId }) {
-  const [statesGeo, setStatesGeo] = useState<FeatureCollection | null>(null)
   const [hover, setHover] = useState<Hover | null>(null)
-
-  useEffect(() => {
-    loadStates()
-      .then(setStatesGeo)
-      .catch(() => logLine('ERROR', 'State boundaries could not be loaded'))
-  }, [])
+  // The state fills are the whole figure, so an uncovered load is a blank map that looks
+  // like the split itself is missing.
+  const { data: statesGeo } = useAsyncData(loadStates, 'State boundaries')
 
   // A plain record rather than a Map: the maplibre `Map` component shadows the global here.
   const regionOf = useMemo(() => {
@@ -76,6 +73,7 @@ export function HoldoutMap({ role }: { role: RoleId }) {
 
   return (
     <div className="relative h-[520px] overflow-hidden rounded-[14px]">
+      {!statesGeo && <LoadingOverlay label="Loading state boundaries" className="z-40" />}
       <Map
         initialViewState={{ longitude: 79.5, latitude: 22.5, zoom: 3.6 }}
         mapStyle={offlineStyle()}

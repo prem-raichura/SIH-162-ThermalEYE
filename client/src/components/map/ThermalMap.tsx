@@ -9,6 +9,7 @@ import Map, {
   type MapLayerMouseEvent,
   type MapRef,
 } from 'react-map-gl/maplibre'
+import { RotateCw } from 'lucide-react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { offlineStyle, satelliteStyle, BOUNDARY_PAINT, INDIA_BOUNDS } from '@/lib/mapStyle'
@@ -121,9 +122,17 @@ export function ThermalMap({
   const [statesGeo, setStatesGeo] = useState<FeatureCollection | null>(null)
   const [districtsGeo, setDistrictsGeo] = useState<FeatureCollection | null>(null)
   const [hover, setHover] = useState<HoverInfo | null>(null)
-  /** Covers the first fetch of the layers the map cannot draw without. */
-  const [layersPending, setLayersPending] = useState(true)
-  const [districtsPending, setDistrictsPending] = useState(false)
+  const [districtsFailed, setDistrictsFailed] = useState(false)
+  /** Bumped by the retry, which is what re-runs the load effect. */
+  const [attempt, setAttempt] = useState(0)
+  /**
+   * Which attempt has finished, and how. Recording the outcome rather than flipping a pending
+   * flag means both states are derived below instead of pushed from inside the effect.
+   */
+  const [settled, setSettled] = useState<{ attempt: number; failed: boolean } | null>(null)
+
+  const layersPending = settled?.attempt !== attempt
+  const layersFailed = settled?.attempt === attempt && settled.failed
   const reducedMotion = usePrefersReducedMotion()
 
   const window = useFilters((s) => s.window)
@@ -135,6 +144,8 @@ export function ThermalMap({
   const basemap = useLayers((s) => s.basemap)
   const setBasemap = useLayers((s) => s.setBasemap)
   const setTilesFailed = useLayers((s) => s.setTilesFailed)
+
+  const districtsPending = visible.districts && !districtsGeo && !districtsFailed
 
   // The style object must be stable: a fresh object each render makes react-map-gl rebuild
   // the style and the data layers never settle.
@@ -149,7 +160,10 @@ export function ThermalMap({
 
   useEffect(() => {
     // Both are needed before the map says anything true, so the overlay lifts when the pair
-    // settles rather than when the first one does.
+    // settles rather than when the first one does — and a failure is stated on the map
+    // instead of only in the console, where a map with no points looks like an empty country.
+    let live = true
+
     Promise.allSettled([
       loadDetections()
         .then(setDetections)
@@ -163,18 +177,26 @@ export function ThermalMap({
           logLine('ERROR', 'State boundaries could not be loaded')
           throw e
         }),
-    ]).then(() => setLayersPending(false))
-  }, [])
+    ]).then((results) => {
+      if (!live) return
+      setSettled({ attempt, failed: results.some((r) => r.status === 'rejected') })
+    })
+
+    return () => {
+      live = false
+    }
+  }, [attempt])
 
   // Districts are 1.1 MB, so they only load the first time the layer is switched on.
   useEffect(() => {
-    if (!visible.districts || districtsGeo) return
-    setDistrictsPending(true)
+    if (!visible.districts || districtsGeo || districtsFailed) return
     loadDistricts()
       .then(setDistrictsGeo)
-      .catch(() => logLine('ERROR', 'District boundaries could not be loaded'))
-      .finally(() => setDistrictsPending(false))
-  }, [visible.districts, districtsGeo])
+      .catch(() => {
+        setDistrictsFailed(true)
+        logLine('ERROR', 'District boundaries could not be loaded')
+      })
+  }, [visible.districts, districtsGeo, districtsFailed])
 
   const days = WINDOW_DAYS[window]
   const siteIds = useMemo(() => new Set(sites.map((s) => s.id)), [sites])
@@ -475,6 +497,22 @@ export function ThermalMap({
       </Map>
 
       {layersPending && <LoadingOverlay label="Loading map layers" className="z-40" />}
+
+      {!layersPending && layersFailed && (
+        <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-40 flex flex-wrap items-center justify-center gap-3 px-3 pb-3">
+          <p className="bg-card/95 border-line text-ink rounded-full border px-3.5 py-1.5 text-[12px] shadow-sm backdrop-blur">
+            Some map layers could not be loaded.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAttempt((n) => n + 1)}
+            className="bg-card/95 border-line hover:border-ink-faint text-ink-soft hover:text-ink inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] shadow-sm backdrop-blur transition-colors"
+          >
+            <RotateCw size={12} strokeWidth={1.9} />
+            Try again
+          </button>
+        </div>
+      )}
 
       {controls && (
         <div className="pointer-events-none absolute inset-0 p-3">

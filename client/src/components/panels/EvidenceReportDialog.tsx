@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
 import { Printer } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { loadSar, loadShap, loadSpectral, landcover, siteById } from '@/lib/data'
-import type { LandCover, SarEntry, ShapEntry, SpectralEntry } from '@/lib/types'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
+import type { LandCover } from '@/lib/types'
 import { coord, days, istDate, kelvin, nf, shortDate, sqm } from '@/lib/format'
 import { CLASS_COLOR } from '@/lib/thermal'
 
@@ -21,16 +22,23 @@ export function EvidenceReportDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const [shap, setShap] = useState<ShapEntry | null>(null)
-  const [spectral, setSpectral] = useState<SpectralEntry | null>(null)
-  const [sar, setSar] = useState<SarEntry | null>(null)
+  // Three files land independently, so the report used to build itself in front of the
+  // reader a section at a time. It now waits for the set and arrives whole.
+  const shapAll = useAsyncData(loadShap, 'Model explanations')
+  const spectralAll = useAsyncData(loadSpectral, 'Sentinel-2 indices')
+  const sarAll = useAsyncData(loadSar, 'Sentinel-1 readings')
 
-  useEffect(() => {
-    if (!siteId || !open) return
-    loadShap().then((all) => setShap(all[siteId] ?? null))
-    loadSpectral().then((all) => setSpectral(all[siteId] ?? null))
-    loadSar().then((all) => setSar(all[siteId] ?? null))
-  }, [siteId, open])
+  const evidencePending = shapAll.pending || spectralAll.pending || sarAll.pending
+  const evidenceError = shapAll.error ?? spectralAll.error ?? sarAll.error
+  const retryEvidence = () => {
+    if (shapAll.error) shapAll.retry()
+    if (spectralAll.error) spectralAll.retry()
+    if (sarAll.error) sarAll.retry()
+  }
+
+  const shap = siteId ? (shapAll.data?.[siteId] ?? null) : null
+  const spectral = siteId ? (spectralAll.data?.[siteId] ?? null) : null
+  const sar = siteId ? (sarAll.data?.[siteId] ?? null) : null
 
   const site = siteById(siteId)
   if (!site) return null
@@ -87,6 +95,17 @@ export function EvidenceReportDialog({
             />
           </Section>
 
+          {(evidencePending || evidenceError) && (
+            <Section title="Evidence">
+              <PanelLoader
+                height={180}
+                label="Loading evidence"
+                error={evidenceError}
+                onRetry={retryEvidence}
+              />
+            </Section>
+          )}
+
           {shap && (
             <Section title="Model evidence">
               <ul className="space-y-1">
@@ -119,6 +138,7 @@ export function EvidenceReportDialog({
             </Section>
           )}
 
+          {!evidencePending && !evidenceError && (
           <Section title="Satellite and land cover">
             <Grid
               rows={[
@@ -131,6 +151,7 @@ export function EvidenceReportDialog({
               ]}
             />
           </Section>
+          )}
 
           <Section title="Facility context">
             <Grid

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { CloudSun, Radar, ShieldAlert, Timer } from 'lucide-react'
 import { PageHeader } from '@/components/shell/PageHeader'
@@ -6,10 +6,15 @@ import { Panel } from '@/components/panels/Panel'
 import { StatTile } from '@/components/panels/StatTile'
 import { scoreHistogram, useNrscData } from './useNrscData'
 import { loadDetections, meta } from '@/lib/data'
+import type { Detection } from '@/lib/types'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
+
+/** One frozen empty array, so a pending load does not re-key every memo below it. */
+const NO_DETECTIONS: Detection[] = []
 import { NON_CLAIMS, PREFERRED_WORDING } from '@/lib/nonClaims'
 import { AXIS, CHART_CATEGORICAL, MARK, TOOLTIP_STYLE } from '@/lib/chart'
 import { nf, pctRaw } from '@/lib/format'
-import type { Detection } from '@/lib/types'
 import type { Role } from '@/lib/roles'
 
 const GAP_BINS = [
@@ -27,11 +32,8 @@ const GAP_BINS = [
  */
 export function NrscQuality({ role }: { role: Role }) {
   const { filtered, counts } = useNrscData()
-  const [detections, setDetections] = useState<Detection[]>([])
-
-  useEffect(() => {
-    loadDetections().then(setDetections)
-  }, [])
+  const { data: loaded, pending, error, retry } = useAsyncData(loadDetections, 'Detection records')
+  const detections = loaded ?? NO_DETECTIONS
 
   const sar = useMemo(
     () => scoreHistogram(filtered.filter((s) => s.sentinel1Available).map((s) => s.sarQualityScore)),
@@ -77,7 +79,7 @@ export function NrscQuality({ role }: { role: Role }) {
         meta={[
           { label: 'Records', value: nf(filtered.length) },
           { label: 'FIRMS holding', value: nf(meta.firms.totalDetections) },
-          { label: 'Sampled', value: nf(detections.length) },
+          { label: 'Sampled', value: pending ? '—' : nf(detections.length) },
         ]}
       />
 
@@ -168,6 +170,17 @@ export function NrscQuality({ role }: { role: Role }) {
           <p>{meta.firms.note}</p>
           <p>{meta.firms.caveat}</p>
         </div>
+
+        {(pending || error) && (
+          <div className="border-line mt-3 border-t pt-3">
+            <PanelLoader
+              height={96}
+              label="Loading the demo sample"
+              error={error}
+              onRetry={retry}
+            />
+          </div>
+        )}
 
         {sampled.length > 0 && (
           <div className="border-line mt-3 border-t pt-3">

@@ -4,6 +4,7 @@ import { Panel } from '@/components/panels/Panel'
 import { TrendChart } from '@/components/panels/TrendChart'
 import { StatTile } from '@/components/panels/StatTile'
 import { useFsiSites, useSeasonalCounts } from './useFsiData'
+import { PanelLoader } from '@/components/shell/Loader'
 import { CalendarRange, Leaf, TreePine } from 'lucide-react'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -14,7 +15,7 @@ import type { Role } from '@/lib/roles'
  * moves with the season, which is itself a discriminator.
  */
 export function FsiSeasonal({ role }: { role: Role }) {
-  const { series, indexed, sampled } = useSeasonalCounts()
+  const { series, indexed, sampled, pending, error, retry } = useSeasonalCounts()
   const { filtered } = useFsiSites()
 
   const peaks = useMemo(() => {
@@ -42,7 +43,7 @@ export function FsiSeasonal({ role }: { role: Role }) {
         title="Burn seasons"
         description="When each class actually burns, counted from the detection record rather than assumed."
         meta={[
-          { label: 'Records sampled', value: nf(sampled) },
+          { label: 'Records sampled', value: pending ? '—' : nf(sampled) },
           { label: 'Events in view', value: nf(filtered.length) },
         ]}
       />
@@ -74,18 +75,22 @@ export function FsiSeasonal({ role }: { role: Role }) {
         title="When each class burns"
         subtitle="Each class as a share of its own annual detections, so the seasons are comparable on one scale"
       >
-        <TrendChart
-          data={indexed}
-          xKey="month"
-          series={[
-            { key: 'crop_burning', label: 'Crop burning' },
-            { key: 'forest_fire', label: 'Forest fire' },
-            { key: 'waste_fire', label: 'Waste fire' },
-            { key: 'industrial', label: 'Industrial' },
-          ]}
-          height={280}
-          unit="% of year"
-        />
+        {pending || error ? (
+          <PanelLoader height={280} label="Loading detections" error={error} onRetry={retry} />
+        ) : (
+          <TrendChart
+            data={indexed}
+            xKey="month"
+            series={[
+              { key: 'crop_burning', label: 'Crop burning' },
+              { key: 'forest_fire', label: 'Forest fire' },
+              { key: 'waste_fire', label: 'Waste fire' },
+              { key: 'industrial', label: 'Industrial' },
+            ]}
+            height={280}
+            unit="% of year"
+          />
+        )}
         <p className="text-ink-faint mt-2 text-[11px]">
           Industrial detections outnumber vegetation ones several times over. Plotted as raw counts on one axis they
           flatten the burn seasons, and a second y-axis would only hide the problem — so every class is indexed to its

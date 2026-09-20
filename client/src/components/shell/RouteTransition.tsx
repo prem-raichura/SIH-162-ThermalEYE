@@ -1,37 +1,30 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
 import { LoadingOverlay } from './Loader'
 import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
 
 /** Long enough to read as a deliberate step, short enough not to be in the way. */
-const HOLD_MS = 3000
+const HOLD_MS = 420
 
 /**
  * Holds the loader open across a navigation.
  *
  * Suspense alone cannot do this: it drops its fallback the instant the chunk resolves, which
- * on a warm cache is a few milliseconds and reads as a flicker rather than a transition. This
- * covers the other half — the two together mean a slow chunk is held by Suspense and a fast
- * one by this timer, and the reader sees the same thing either way.
+ * on a warm cache is a few milliseconds and reads as a flicker rather than a transition.
  *
- * The flag is derived during render rather than set from an effect keyed on the path. While
- * a lazy chunk is in flight this subtree is suspended, and effects in a suspended tree are
- * torn down and re-run — which cancelled the timer and made the hold collapse to nothing. The
- * timer here keys off the flag instead, so a suspend/reveal cycle restarts it rather than
- * losing it.
+ * This has to sit *outside* the Suspense boundary, not inside it. A component inside the
+ * boundary is part of the tree that suspends while the chunk is in flight, and React tears
+ * down and re-runs the effects of a suspended tree — which cancelled the timer and collapsed
+ * the hold to nothing. Out here the timer is never interrupted, and the overlay covers both
+ * the suspended frames and the fast ones.
+ *
+ * It is keyed on the route by its caller, so each navigation mounts a fresh one and the flag
+ * starts true by construction rather than being pushed there from an effect.
  *
  * The hold is presentation, not work, so anyone who asked for less motion skips it entirely.
  */
 export function RouteTransition({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation()
   const reducedMotion = usePrefersReducedMotion()
   const [busy, setBusy] = useState(!reducedMotion)
-  const shownFor = useRef(pathname)
-
-  if (shownFor.current !== pathname) {
-    shownFor.current = pathname
-    setBusy(!reducedMotion)
-  }
 
   useEffect(() => {
     if (!busy) return

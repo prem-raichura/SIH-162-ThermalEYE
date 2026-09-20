@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   NON_INDUSTRIAL_CLASSES,
   loadDetections,
@@ -6,8 +6,13 @@ import {
   siteById,
   withinWindow,
 } from '@/lib/data'
+import type { Detection } from '@/lib/types'
+import { useAsyncData } from '@/hooks/useAsyncData'
+
+/** One frozen empty array, so a pending load does not re-key every memo below it. */
+const NO_DETECTIONS: Detection[] = []
 import { useFilters } from '@/store/useFilters'
-import type { Detection, SourceClass } from '@/lib/types'
+import type { SourceClass } from '@/lib/types'
 
 export const FSI_CLASSES: SourceClass[] = NON_INDUSTRIAL_CLASSES
 
@@ -53,11 +58,8 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
  * modelled — the burn-season shape has to come from the data or it proves nothing.
  */
 export function useSeasonalCounts() {
-  const [detections, setDetections] = useState<Detection[]>([])
-
-  useEffect(() => {
-    loadDetections().then(setDetections)
-  }, [])
+  const { data, pending, error, retry } = useAsyncData(loadDetections, 'Detection records')
+  const detections = data ?? NO_DETECTIONS
 
   const series = useMemo(() => {
     const rows = MONTHS.map((month) => ({
@@ -101,7 +103,15 @@ export function useSeasonalCounts() {
     }))
   }, [series])
 
-  return { series, indexed, sampled: detections.filter((d) => d.siteId !== null).length }
+  return {
+    series,
+    indexed,
+    sampled: detections.filter((d) => d.siteId !== null).length,
+    // Passed through so the charts can say they are waiting rather than draw a flat year.
+    pending,
+    error,
+    retry,
+  }
 }
 
 /** The stated separation threshold of section 7.1, used by the scatter and the counters. */

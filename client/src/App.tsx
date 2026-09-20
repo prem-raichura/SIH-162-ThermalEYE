@@ -22,11 +22,11 @@ function Section() {
   // a navigation never reads as a full reload.
   if (Page)
     return (
-      <Suspense fallback={<LoadingOverlay />}>
-        <RouteTransition>
+      <RouteTransition key={`${role.id}/${section ?? ''}`}>
+        <Suspense fallback={<LoadingOverlay />}>
           <Page role={role} />
-        </RouteTransition>
-      </Suspense>
+        </Suspense>
+      </RouteTransition>
     )
 
   return (
