@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔥 ThermalEye
+# ThermalEye: Thermal Event & Industrial Intelligence Engine
 
 ### **SEE. UNDERSTAND. ACT.**
 
