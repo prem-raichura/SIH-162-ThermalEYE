@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Industrial thermal intelligence for India — detection, classification and monitoring of industrial fires and persistent thermal sources." />
-    <link rel="icon" type="image/svg+xml" href="/thermaleye.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- The boot screen draws the mark, so it is worth having in flight before the CSS below. -->
+    <link rel="preload" as="image" href="/thermaleye.png" />
     <!-- Fonts are served from this origin so the product looks the same with the network off. -->
     <link rel="preload" href="/fonts/public-sans.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin />
@@ -57,12 +59,8 @@
             <circle cx="24" cy="24" r="22" fill="none" stroke="#c14a33" stroke-width="2.5"
                     stroke-linecap="round" stroke-dasharray="34 104" />
           </svg>
-          <svg viewBox="0 0 32 32" width="42" height="42" aria-hidden="true"
-               style="position:absolute;left:17px;top:17px">
-            <circle cx="16" cy="16" r="15" fill="#c14a33" />
-            <circle cx="16" cy="16" r="9" fill="none" stroke="#f6f2e9" stroke-width="2" />
-            <circle cx="16" cy="16" r="3.4" fill="#fca636" />
-          </svg>
+          <img src="/thermaleye.png" width="42" height="42" alt="" aria-hidden="true"
+               style="position:absolute;left:17px;top:17px" />
         </div>
         <p class="boot-label">Starting ThermalEye</p>
       </div>

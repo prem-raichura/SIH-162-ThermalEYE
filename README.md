@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="client/public/thermaleye.png" alt="ThermalEye" width="150" />
+
 # ThermalEye: Thermal Event & Industrial Intelligence Engine
 
 ### **SEE. UNDERSTAND. ACT.**

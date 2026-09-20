@@ -1,13 +1,24 @@
 import { cn } from '@/lib/utils'
 
-/** The mark: an aperture ring around a hot centre. Used on the rail and the login page. */
+/**
+ * The mark: one half the observed world, the other half the retrieval and what it is looking at.
+ * Used on the rail, the login page and inside the loader.
+ *
+ * Served at 256px and drawn at 32-44, so it stays sharp on a 3x display without shipping the
+ * full-resolution original.
+ */
 export function BrandMark({ size = 32, className }: { size?: number; className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" width={size} height={size} className={className} aria-hidden="true">
-      <circle cx="16" cy="16" r="15" fill="var(--color-terracotta)" />
-      <circle cx="16" cy="16" r="9" fill="none" stroke="var(--color-paper)" strokeWidth="2" />
-      <circle cx="16" cy="16" r="3.4" fill="var(--color-ramp-4)" />
-    </svg>
+    <img
+      src="/thermaleye.png"
+      width={size}
+      height={size}
+      className={className}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      style={{ objectFit: 'contain' }}
+    />
   )
 }
 
