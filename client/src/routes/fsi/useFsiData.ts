@@ -29,7 +29,7 @@ export function useFsiSites() {
       vegetation.filter((s) => {
         if (classes && classes.length > 0 && !classes.includes(s.predictedClass)) return false
         if (state && s.state !== state) return false
-        if (window !== 'all' && !withinWindow(s.lastDetection, window)) return false
+        if (window !== 'all' && !withinWindow(s.lastDetection, window, s.id)) return false
         return true
       }),
     [vegetation, classes, state, window],

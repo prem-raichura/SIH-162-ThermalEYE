@@ -24,6 +24,7 @@ export function RankedQueue({
   maxHeight = 360,
   fill = false,
   showAssessment = true,
+  variant = 'table',
 }: {
   rows: UnmappedCandidate[]
   onSelect?: (row: UnmappedCandidate) => void
@@ -34,6 +35,12 @@ export function RankedQueue({
   /** Take the panel's remaining height instead of a fixed one. */
   fill?: boolean
   showAssessment?: boolean
+  /**
+   * 'list' stacks each candidate into two lines instead of six columns. Six columns need
+   * ~480px; a dock floating on the map has ~310px, and a table that scrolls sideways to
+   * reach its own numbers is not a table anyone reads.
+   */
+  variant?: 'table' | 'list'
 }) {
   const visible = limit ? rows.slice(0, limit) : rows
 
@@ -43,6 +50,60 @@ export function RankedQueue({
         title="No candidates in this view"
         body="Candidates appear where a persistent thermal site has no industrial feature within 1 km."
       />
+    )
+  }
+
+  if (variant === 'list') {
+    return (
+      <ul
+        className={cn(
+          'divide-line -mx-1 divide-y overflow-y-auto overscroll-contain',
+          'panel-scroll',
+          fill && 'h-full min-h-0 flex-1',
+        )}
+        style={fill ? undefined : { maxHeight }}
+      >
+        {visible.map((row) => (
+          <li key={row.id}>
+            <button
+              type="button"
+              onClick={() => onSelect?.(row)}
+              aria-current={selectedId === row.id || undefined}
+              className={cn(
+                'hover:bg-paper-deep/70 flex w-full flex-col gap-1 rounded-[8px] px-1.5 py-2 text-left transition-colors',
+                selectedId === row.id && 'bg-paper-deep',
+              )}
+            >
+              <span className="flex w-full min-w-0 items-baseline gap-2">
+                <span className="text-ink-faint tnum w-4 shrink-0 font-mono text-[11px]">{row.rank}</span>
+                <span className="min-w-0 flex-1 truncate text-[12.5px]">{row.label}</span>
+                <span
+                  className="tnum shrink-0 font-mono text-[12px]"
+                  style={{ color: tHotColor(row.tHot) }}
+                >
+                  {row.tHot} K
+                </span>
+              </span>
+
+              <span className="text-ink-faint flex w-full items-center gap-2 pl-6 text-[11px]">
+                <span className="tnum font-mono">{row.persistenceDays} d persistent</span>
+                {showAssessment && (
+                  <span className="inline-flex min-w-0 items-center gap-1.5">
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: ASSESSMENT_TONE[row.assessment] }}
+                    />
+                    <span className="truncate">{row.assessment}</span>
+                  </span>
+                )}
+                <span className="ml-auto shrink-0">
+                  <QualityChip score={row.coverageQualityScore} width={28} />
+                </span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
     )
   }
 

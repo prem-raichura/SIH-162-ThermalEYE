@@ -19,6 +19,8 @@ export function AlertDetail({
   site,
   routing,
   showThumbnail = true,
+  emptyBody = 'Pick an alert from the stream. Its location, what it is doing against its own normal, and the evidence behind the classification open here.',
+  compactEmpty = false,
   actions,
   footer,
 }: {
@@ -27,15 +29,16 @@ export function AlertDetail({
   site: ThermalSite | undefined
   routing?: Routing
   showThumbnail?: boolean
+  /** What to say when nothing is picked — the map console reaches alerts differently. */
+  emptyBody?: string
+  /** Tighter empty state, for the floating docks on a map console. */
+  compactEmpty?: boolean
   actions?: ReactNode
   footer?: ReactNode
 }) {
   if (!alert) {
     return (
-      <EmptyState
-        title="No alert selected"
-        body="Pick an alert from the stream. Its location, what it is doing against its own normal, and the evidence behind the classification open here."
-      />
+      <EmptyState title="No alert selected" body={emptyBody} compact={compactEmpty} />
     )
   }
 

@@ -61,7 +61,7 @@ export function useNrscData(): NrscData {
       if (state && s.state !== state) return false
       if (behaviour !== 'all' && s.behaviour !== behaviour) return false
       // Controls carry no detections, so a time window would silently drop them.
-      if (window !== 'all' && s.lastDetection !== null && !withinWindow(s.lastDetection, window)) return false
+      if (window !== 'all' && s.lastDetection !== null && !withinWindow(s.lastDetection, window, s.id)) return false
       if (needle && !`${s.name} ${s.operator ?? ''} ${s.state}`.toLowerCase().includes(needle)) return false
       return true
     })

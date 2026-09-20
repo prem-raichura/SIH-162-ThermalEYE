@@ -34,7 +34,7 @@ export const useSettings = create<SettingsState>((set, get) => {
 
   return {
     units: initial.units ?? 'K',
-    defaultWindow: initial.defaultWindow ?? '1y',
+    defaultWindow: initial.defaultWindow ?? '24h',
     minCoverageQuality: initial.minCoverageQuality ?? 0,
     defaultLayers: initial.defaultLayers ?? ['thermal', 'sites', 'unmapped'],
     setUnits: (units) => {

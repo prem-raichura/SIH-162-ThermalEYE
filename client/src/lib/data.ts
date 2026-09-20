@@ -13,6 +13,7 @@ import landcoverRaw from '@/data/landcover.json'
 import modelRaw from '@/data/model.json'
 import validationRaw from '@/data/validation.json'
 import sourcesRaw from '@/data/sources.json'
+import { ageInDays } from './acquisitionTime'
 import metaRaw from '@/data/meta.json'
 
 import type { FeatureCollection } from 'geojson'
@@ -70,31 +71,68 @@ export const controlSites = () => sites.filter((s) => s.class === 'nonthermal_co
 export const sitesByClass = (classes: SourceClass[]) => sites.filter((s) => classes.includes(s.class))
 export const abnormalSites = () => sites.filter((s) => s.behaviour === 'abnormal')
 
-export const WINDOW_DAYS: Record<TimeWindow, number> = { '7d': 7, '30d': 30, '1y': 365, all: 100000 }
+/**
+ * Every window as a day count, so the map layers and the tables can share one comparison.
+ * The hour windows are fractions of a day — three hours is 0.125.
+ */
+export const WINDOW_DAYS: Record<TimeWindow, number> = {
+  '3h': 3 / 24,
+  '6h': 6 / 24,
+  '12h': 12 / 24,
+  '24h': 1,
+  '3d': 3,
+  '7d': 7,
+  '30d': 30,
+  '1y': 365,
+  all: 100000,
+}
 
-/** The dataset window ends 2026-01-01; "now" is anchored to it so relative windows work. */
-export const DATA_NOW = new Date(`${meta.windowEnd}T00:00:00Z`)
+/**
+ * The dataset window ends 2026-01-01; "now" is the instant that day closes, so relative
+ * windows work. The close rather than the open: `windowEnd` is inclusive — records carry it
+ * as their last detection — so anchoring to the midnight that opens the day would put the
+ * freshest records in the future and drop them from every window.
+ */
+export const DATA_NOW = new Date(new Date(`${meta.windowEnd}T00:00:00Z`).getTime() + 86400000)
 
-export function withinWindow(dateIso: string | null, window: TimeWindow): boolean {
+/**
+ * Whether a record falls inside the selected window.
+ *
+ * Below a day the comparison needs an hour, which FIRMS does not ship, so `id` and `night`
+ * derive a stable one — see `lib/acquisitionTime`. Callers filtering whole days can leave
+ * them out and the record is treated as landing at midnight.
+ */
+export function withinWindow(
+  dateIso: string | null,
+  window: TimeWindow,
+  id = '',
+  night?: boolean,
+): boolean {
   if (!dateIso) return false
   const days = WINDOW_DAYS[window]
-  const age = (DATA_NOW.getTime() - new Date(`${dateIso}T00:00:00Z`).getTime()) / 86400000
+  const age = ageInDays(dateIso, DATA_NOW, id, night)
   return age >= 0 && age <= days
 }
 
 // ---------------------------------------------------------------- lazy files
 const cache = new Map<string, Promise<unknown>>()
 
+/**
+ * The cache holds the promise, so a file is fetched once however many panels ask for it.
+ *
+ * A rejection is evicted rather than kept: caching a failed promise would make the first
+ * network blip permanent for the rest of the session, and the retry offered on every loading
+ * panel would do nothing at all.
+ */
 function loadJson<T>(file: string): Promise<T> {
   const key = file
   if (!cache.has(key)) {
-    cache.set(
-      key,
-      fetch(`${import.meta.env.BASE_URL}${file}`).then((r) => {
-        if (!r.ok) throw new Error(`Could not load ${file} (${r.status})`)
-        return r.json()
-      }),
-    )
+    const pending = fetch(`${import.meta.env.BASE_URL}${file}`).then((r) => {
+      if (!r.ok) throw new Error(`Could not load ${file} (${r.status})`)
+      return r.json()
+    })
+    pending.catch(() => cache.delete(key))
+    cache.set(key, pending)
   }
   return cache.get(key) as Promise<T>
 }

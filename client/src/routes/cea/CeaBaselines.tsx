@@ -10,13 +10,13 @@ import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
-import { siteById } from '@/lib/data'
+import { model, siteById } from '@/lib/data'
 import { days, megawatt, nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
 
 /** Section 18 — each station's own long-term thermal profile, which is what deviation means. */
 export function CeaBaselines({ role }: { role: Role }) {
-  const { filtered } = useCeaSites()
+  const { filtered, controls } = useCeaSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
   const [reportFor, setReportFor] = useState<string | null>(null)
@@ -119,6 +119,15 @@ export function CeaBaselines({ role }: { role: Role }) {
           )}
         </div>
       </div>
+
+      {/* A baseline is only as trustworthy as the negatives it was checked against, so the
+          control result sits with the baselines rather than on the overview console. */}
+      <Panel
+        title="Why the negative controls matter"
+        subtitle={`${nf(controls.length)} monitored, ${nf(model.controls.total)} in the register`}
+      >
+        <p className="text-ink-soft text-[12.5px]">{model.controls.note}</p>
+      </Panel>
 
       <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />

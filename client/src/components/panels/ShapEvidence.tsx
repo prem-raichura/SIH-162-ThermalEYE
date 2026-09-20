@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
 import { DIVERGING } from '@/lib/chart'
 import { loadShap } from '@/lib/data'
-import type { ShapEntry, ShapRow } from '@/lib/types'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
+import type { ShapRow } from '@/lib/types'
 
 /**
  * Per-prediction explanation (section 29). Model evidence — what the thermal physics and the
@@ -10,13 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton'
  * say. A nearby facility is context, never proof.
  */
 export function ShapEvidence({ siteId }: { siteId: string }) {
-  const [shap, setShap] = useState<Record<string, ShapEntry> | null>(null)
+  const { data: shap, error, retry } = useAsyncData(loadShap, 'Model explanations')
 
-  useEffect(() => {
-    loadShap().then(setShap)
-  }, [])
-
-  if (!shap) return <Skeleton className="h-[260px] w-full rounded-[10px]" />
+  if (!shap) return <PanelLoader height={260} error={error} onRetry={retry} />
   const entry = shap[siteId]
   if (!entry) return null
 

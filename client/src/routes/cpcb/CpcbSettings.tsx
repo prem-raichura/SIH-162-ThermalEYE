@@ -7,13 +7,13 @@ import { useSettings } from '@/store/useSettings'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import type { TimeWindow } from '@/lib/types'
+import { HISTORY, RECENT } from '@/lib/timeWindows'
 import type { Role } from '@/lib/roles'
 
+/** Every window the time filter offers, so a default can be set to any of them. */
 const WINDOWS: { id: TimeWindow; label: string }[] = [
-  { id: '7d', label: 'Last 7 days' },
-  { id: '30d', label: 'Last 30 days' },
-  { id: '1y', label: 'Last year' },
-  { id: 'all', label: 'All six years' },
+  ...RECENT.map((o) => ({ id: o.id, label: o.full })),
+  ...HISTORY.map((o) => ({ id: o.id, label: o.full })),
 ]
 
 /** Settings change what the other pages actually do — nothing here is decorative. */
@@ -128,6 +128,11 @@ export function CpcbSettings({ role }: { role: Role }) {
             <p>
               Facility names, coordinates, capacities and register counts come from the collected dataset. Thermal time
               series, model metrics and alert timings are deterministic stand-ins for pipeline output.
+            </p>
+            <p>
+              FIRMS records an acquisition date and a day/night flag, never a clock time, so the hour windows above run
+              on a derived hour — stable per record, and always on the correct side of dusk. Treat the hour as a
+              simulation; the date it sits on is real.
             </p>
             <p>
               Nothing here leaves the browser. Settings are stored locally and the only network request the app can make

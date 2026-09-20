@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
 import { QualityChip } from './QualityChip'
 import { EmptyState } from './EmptyState'
 import { loadSar } from '@/lib/data'
-import type { SarEntry } from '@/lib/types'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
 
 /**
  * Sentinel-1 structural evidence (section 10). SAR never detects heat — it answers what
@@ -11,13 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton'
  * rather than plotted against the thermal series.
  */
 export function SarEvidence({ siteId }: { siteId: string }) {
-  const [sar, setSar] = useState<Record<string, SarEntry> | null>(null)
+  const { data: sar, error, retry } = useAsyncData(loadSar, 'Sentinel-1 readings')
 
-  useEffect(() => {
-    loadSar().then(setSar)
-  }, [])
-
-  if (!sar) return <Skeleton className="h-[150px] w-full rounded-[10px]" />
+  if (!sar) return <PanelLoader height={150} error={error} onRetry={retry} />
   const entry = sar[siteId]
   if (!entry) return null
 

@@ -1,4 +1,7 @@
+import { Suspense } from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes, useParams } from 'react-router-dom'
+import { LoadingOverlay } from '@/components/shell/Loader'
+import { RouteTransition } from '@/components/shell/RouteTransition'
 import { RoleRoute } from '@/routes/RoleRoute'
 import { LoginPage } from '@/routes/login/LoginPage'
 import { NotFound } from '@/routes/NotFound'
@@ -15,7 +18,16 @@ function Section() {
   if (!isRoleId(roleParam)) return <Navigate to="/login" replace />
   const role = ROLES[roleParam]
   const Page = pageFor(role.id, section)
-  if (Page) return <Page role={role} />
+  // The boundary sits inside AppShell's <main>, so the rail, top bar and console stay put and
+  // a navigation never reads as a full reload.
+  if (Page)
+    return (
+      <Suspense fallback={<LoadingOverlay />}>
+        <RouteTransition>
+          <Page role={role} />
+        </RouteTransition>
+      </Suspense>
+    )
 
   return (
     <SectionScaffold

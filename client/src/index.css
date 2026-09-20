@@ -234,6 +234,22 @@
   background: var(--color-ink-faint);
 }
 
+/* ---------------------------------------------------------------- loading motion
+   The brand mark is three concentric circles, so rotating it is invisible. The ring around
+   it carries the motion instead, which also keeps the mark itself undistorted. Under
+   prefers-reduced-motion the blanket rule above freezes this to a static arc, which is why
+   every loader also carries a text label. */
+@keyframes te-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility te-spin {
+  animation: te-spin 1.1s linear infinite;
+  transform-origin: 50% 50%;
+}
+
 /* ---------------------------------------------------------------- enter / exit motion
    The shadcn primitives use animate-in / slide-in-from-* class names that come from a
    plugin we do not depend on. These register the same names as real Tailwind utilities so

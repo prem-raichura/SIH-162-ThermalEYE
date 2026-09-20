@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Flame, Factory, Layers, TriangleAlert } from 'lucide-react'
-import { PageHeader } from '@/components/shell/PageHeader'
 import { ThermalMap } from '@/components/map/ThermalMap'
-import { Panel, PanelLink } from '@/components/panels/Panel'
-import { StatTile } from '@/components/panels/StatTile'
-import { SiteTable } from '@/components/panels/SiteTable'
+import { MapConsole } from '@/components/map/MapConsole'
+import { MapDock } from '@/components/map/MapDock'
+import { ReadingsStrip, type Reading } from '@/components/map/ReadingsStrip'
+import { Panel } from '@/components/panels/Panel'
 import { SiteCard } from '@/components/panels/SiteCard'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { AlertStream } from '@/components/panels/AlertStream'
@@ -14,9 +13,11 @@ import { usePpacSites } from './usePpacData'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import { alerts as allAlerts, siteById } from '@/lib/data'
-import { istClock, istDate, nf } from '@/lib/format'
+import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
 import type { Role } from '@/lib/roles'
+
+const TABLE_HINT = 'The full site list is on the Refineries and Flares page.'
 
 export function PpacOverview({ role }: { role: Role }) {
   const navigate = useNavigate()
@@ -27,111 +28,89 @@ export function PpacOverview({ role }: { role: Role }) {
   const selected = siteById(selectedSiteId)
   const [reportFor, setReportFor] = useState<string | null>(null)
 
-  const stats = useMemo(() => {
-    const abnormal = filtered.filter((s) => s.behaviour === 'abnormal').length
-    const multiStack = filtered.filter((s) => (s.flareStacks ?? 0) > 2).length
-    return { abnormal, multiStack }
-  }, [filtered])
-
+  const abnormal = useMemo(() => filtered.filter((s) => s.behaviour === 'abnormal').length, [filtered])
   const siteIds = useMemo(() => new Set(filtered.map((s) => s.id)), [filtered])
   const roleAlerts = useMemo(() => allAlerts.filter((a) => siteIds.has(a.siteId)), [siteIds])
 
+  const readings: Reading[] = [
+    { label: 'Flare sites', value: nf(flares.length) },
+    { label: 'Abnormal', value: nf(abnormal), tone: abnormal > 0 ? 'critical' : 'neutral' },
+    { label: 'Refineries', value: nf(refineries.length) },
+  ]
+
+  const generateReport = () => {
+    setReportFor(selectedSiteId ?? filtered[0]?.id ?? null)
+    logLine(role.id, 'Evidence report generated from the overview')
+  }
+
+  const selectedCard = selected ? (
+    <SiteCard site={selected} onOpenDetail={openDetail} />
+  ) : (
+    <EmptyState
+      compact
+      title="Nothing selected yet"
+      body="Click a point on the map to see its readings here. The full record opens from the card."
+    />
+  )
+
+  const onAlert = (alertId: string, siteId: string, siteName: string) => {
+    selectSite(siteId)
+    logLine(role.id, `Opened alert ${alertId} — ${siteName}`)
+  }
+
+  const stream = (
+    <AlertStream alerts={roleAlerts} fill onSelect={(a) => onAlert(a.id, a.siteId, a.siteName)} />
+  )
+
+
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
+    <>
+      <MapConsole
         role={role}
-        eyebrow="Flaring overview"
         title="Refineries, flares and gas infrastructure"
-        description="A satellite check on flaring behaviour, measured from the dual-band signal rather than reported."
-        meta={[
-          { label: 'Date', value: istDate() },
-          { label: 'Time (IST)', value: istClock() },
-          { label: 'Sites in view', value: nf(filtered.length) },
-          { label: 'PPAC refineries', value: nf(refineries.length) },
-        ]}
-        action="Generate report"
-        onAction={() => {
-          const target = selectedSiteId ?? filtered[0]?.id ?? null
-          setReportFor(target)
-          logLine(role.id, 'Evidence report generated from the overview')
-        }}
+        readings={readings}
+        listAction={{ label: 'Site list', onClick: () => navigate('/ppac/flares') }}
+        action={{ label: 'Generate report', onClick: generateReport }}
+        map={
+          <ThermalMap
+            role={role}
+            sites={filtered}
+            chrome={{ window: false, legend: false }}
+            controlPosition="bottom-left"
+            panelSide="left"
+            tableHint={TABLE_HINT}
+            className="absolute inset-0 rounded-none"
+          />
+        }
+        docks={
+          <>
+            <MapDock title="Selected site">{selectedCard}</MapDock>
+            <MapDock title="Flaring alerts" summary={nf(roleAlerts.length)} grow>
+              {stream}
+            </MapDock>
+          </>
+        }
+        fallback={
+          <div className="flex flex-col gap-4">
+            <div className="bg-card border-line rounded-[14px] border px-4 py-3">
+              <h2 className="font-display text-[22px] leading-none">Refineries, flares and gas infrastructure</h2>
+              <ReadingsStrip items={readings} className="mt-3 flex-wrap" />
+            </div>
+
+            <ThermalMap role={role} sites={filtered} className="h-[420px]" tableHint={TABLE_HINT} />
+
+            <Panel title="Selected site">{selectedCard}</Panel>
+
+            <Panel title="Flaring alerts" subtitle="Deviation from each site's own baseline">
+              {stream}
+            </Panel>
+
+          </div>
+        }
       />
-
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile icon={Flame} label="Active flare sites" value={nf(flares.length)} caption="Night-active hydrocarbon heat" />
-        <StatTile
-          icon={TriangleAlert}
-          label="Abnormal now"
-          value={nf(stats.abnormal)}
-          caption="Above the site's own normal FRP range"
-          tone={stats.abnormal > 0 ? 'critical' : 'neutral'}
-        />
-        <StatTile
-          icon={Layers}
-          label="Multiple-stack sites"
-          value={nf(stats.multiStack)}
-          caption="More than two hot units in one pixel"
-          tone="warning"
-        />
-        <StatTile
-          icon={Factory}
-          label="Refineries tracked"
-          value={nf(refineries.length)}
-          caption="The complete PPAC list, geolocated"
-          tone="good"
-        />
-      </div>
-
-      <ThermalMap role={role} sites={filtered} className="h-[420px] xl:h-[560px]" />
-
-      <div className="grid gap-3 xl:grid-cols-[1.5fr_1fr]">
-        <div className="relative min-h-[380px]">
-          <Panel
-            title="Hydrocarbon sites"
-            subtitle="Refinery, gas flare and LNG heat in the current filter"
-            action={<PanelLink onClick={() => navigate('/ppac/flares')}>Open flare list</PanelLink>}
-            className="absolute inset-0"
-          >
-            <SiteTable
-              sites={filtered}
-              columns={['name', 'class', 'state', 'tHot', 'nightRatio', 'saturation', 'persistence', 'status']}
-              fill
-              selectedId={selectedSiteId}
-              onRowClick={(site) => {
-                selectSite(site.id)
-                logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
-              }}
-            />
-          </Panel>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <Panel title="Selected site" subtitle="Readings for whatever is picked on the map or in the table">
-            {selected ? (
-              <SiteCard site={selected} onOpenDetail={openDetail} />
-            ) : (
-              <EmptyState
-                title="Nothing selected yet"
-                body="Click a point on the map or a row in the table. The full record opens from here."
-              />
-            )}
-          </Panel>
-
-          <Panel title="Flaring alerts" subtitle="Deviation from each site's own baseline">
-            <AlertStream
-              alerts={roleAlerts}
-              limit={4}
-              onSelect={(alert) => {
-                selectSite(alert.siteId)
-                logLine(role.id, `Opened alert ${alert.id} — ${alert.siteName}`)
-              }}
-            />
-          </Panel>
-        </div>
-      </div>
 
       <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
-    </div>
+    </>
   )
 }

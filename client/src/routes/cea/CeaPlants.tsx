@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { PageHeader } from '@/components/shell/PageHeader'
 import { Panel } from '@/components/panels/Panel'
 import { ThermalMap } from '@/components/map/ThermalMap'
@@ -6,6 +7,7 @@ import { SiteCard } from '@/components/panels/SiteCard'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { DistributionDonut } from '@/components/panels/DistributionDonut'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
@@ -16,6 +18,7 @@ import type { Role } from '@/lib/roles'
 
 export function CeaPlants({ role }: { role: Role }) {
   const { filtered, plants, fuels, fuel, setFuel, states } = useCeaSites()
+  const fuelSlices = useMemo(() => fuels.slice(0, 5).map(([label, value]) => ({ label, value })), [fuels])
   const selectSite = useFilters((s) => s.selectSite)
   const openDetail = useFilters((s) => s.openDetail)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -127,6 +130,15 @@ export function CeaPlants({ role }: { role: Role }) {
               <EmptyState title="Nothing selected yet" body="Pick a station to see its readings here." />
             </Panel>
           )}
+
+          <Panel title="Fuel mix" subtitle="Stations by primary fuel">
+            <DistributionDonut
+              slices={fuelSlices}
+              centerLabel="stations"
+              centerValue={nf(filtered.length)}
+              height={150}
+            />
+          </Panel>
         </div>
       </div>
 

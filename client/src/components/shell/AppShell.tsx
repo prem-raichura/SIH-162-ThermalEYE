@@ -13,6 +13,8 @@ import { LAYERS, useLayers, type LayerId } from '@/store/useLayers'
 import { useConsole } from '@/store/useConsole'
 import { nf } from '@/lib/format'
 import { useIsCompact, useIsMobile } from '@/hooks/useMediaQuery'
+import { useFullBleed } from '@/lib/layout'
+import { cn } from '@/lib/utils'
 
 export function AppShell({ role }: { role: Role }) {
   const { section } = useParams()
@@ -22,6 +24,9 @@ export function AppShell({ role }: { role: Role }) {
   const [railOpen, setRailOpen] = useState(() => window.innerWidth >= 1100)
   // Below md the rail is a sheet, so the top-bar button opens that instead of collapsing.
   const [railSheet, setRailSheet] = useState(false)
+  // The map consoles fill the content area instead of scrolling, so the shell hands them a
+  // uniform inset and takes the page scroll away.
+  const fullBleed = useFullBleed(role.id, section)
 
   const boot = useMemo(
     () => [
@@ -89,7 +94,14 @@ export function AppShell({ role }: { role: Role }) {
           section={sectionTitle(role, section)}
           onToggleRail={() => (isMobile ? setRailSheet(true) : setRailOpen((v) => !v))}
         />
-        <main id="main" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto px-3 py-3 md:px-6 md:py-5">
+        <main
+          id="main"
+          tabIndex={-1}
+          className={cn(
+            'min-h-0 flex-1',
+            fullBleed ? 'overflow-hidden p-3 md:p-4' : 'overflow-y-auto px-3 py-3 md:px-6 md:py-5',
+          )}
+        >
           <Outlet />
         </main>
         <SplitConsole role={role} />

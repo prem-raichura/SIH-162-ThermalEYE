@@ -143,6 +143,7 @@ export const ROLES: Record<RoleId, Role> = {
     icon: TreePine,
     nav: nav([
       ['Overview', '', LayoutDashboard],
+      ['All Events', 'events', Table2],
       ['Forest Fires', 'forest', TreePine],
       ['Crop Burning', 'crop', Leaf],
       ['Alerts', 'alerts', AlertTriangle],
@@ -164,6 +165,7 @@ export const ROLES: Record<RoleId, Role> = {
     icon: AlertTriangle,
     nav: nav([
       ['Live Alerts', '', AlertTriangle],
+      ['Alert Queue', 'queue', Table2],
       ['Incident Map', 'incidents', MapIcon],
       ['Severity Settings', 'severity', Settings],
       ['Analytics', 'analytics', BarChart3],
@@ -183,6 +185,7 @@ export const ROLES: Record<RoleId, Role> = {
     icon: Satellite,
     nav: nav([
       ['Full Site Layer', '', Globe2],
+      ['Site Records', 'records', Table2],
       ['Provenance', 'provenance', Table2],
       ['Data Quality', 'quality', Gauge],
       ['Export', 'export', FileText],

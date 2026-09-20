@@ -1,6 +1,7 @@
 import type { FeatureCollection, Feature, Point } from 'geojson'
 import type { Alert, Detection, ThermalSite, UnmappedCandidate } from './types'
 import { DATA_NOW } from './data'
+import { ageInDays } from './acquisitionTime'
 
 const point = (lon: number, lat: number, properties: Record<string, unknown>): Feature<Point> => ({
   type: 'Feature',
@@ -8,8 +9,11 @@ const point = (lon: number, lat: number, properties: Record<string, unknown>): F
   properties,
 })
 
-const ageDays = (iso: string | null) =>
-  iso === null ? 99999 : Math.round((DATA_NOW.getTime() - new Date(`${iso}T00:00:00Z`).getTime()) / 86400000)
+/**
+ * Age in days, kept fractional so the sub-day windows can filter on it. The hour comes from
+ * `lib/acquisitionTime` — FIRMS ships a date and a day/night flag, never a clock time.
+ */
+const ageDays = (iso: string | null, id: string, night?: boolean) => ageInDays(iso, DATA_NOW, id, night)
 
 export function detectionsToGeoJson(detections: Detection[]): FeatureCollection<Point> {
   return {
@@ -20,7 +24,7 @@ export function detectionsToGeoJson(detections: Detection[]): FeatureCollection<
         frp: d.frp,
         brightness: d.brightness,
         night: d.daynight === 'N' ? 1 : 0,
-        ageDays: ageDays(d.acqDate),
+        ageDays: ageDays(d.acqDate, d.id, d.daynight === 'N'),
       }),
     ),
   }
@@ -40,7 +44,7 @@ export function sitesToGeoJson(sites: ThermalSite[]): FeatureCollection<Point> {
         frpMean: s.frpMean,
         persistence: s.persistenceDays,
         abnormal: s.behaviour === 'abnormal' ? 1 : 0,
-        ageDays: ageDays(s.lastDetection),
+        ageDays: ageDays(s.lastDetection, s.id),
       }),
     ),
   }
@@ -59,7 +63,7 @@ export function unmappedToGeoJson(rows: UnmappedCandidate[]): FeatureCollection<
         persistence: u.persistenceDays,
         coverage: u.coverageQualityScore,
         assessment: u.assessment,
-        ageDays: ageDays(u.lastDetection),
+        ageDays: ageDays(u.lastDetection, u.id),
       }),
     ),
   }

@@ -5,6 +5,13 @@ import type { Severity, SourceClass } from '@/lib/types'
 /** What an operator did with an alert. Dispositions are session state, not shipped data. */
 export type Disposition = 'acknowledged' | 'escalated' | 'dismissed'
 
+/** How each disposition reads, on a row and in the operator log. */
+export const DISPOSITION_LABEL: Record<Disposition, string> = {
+  acknowledged: 'Acknowledged',
+  escalated: 'Escalated',
+  dismissed: 'Dismissed',
+}
+
 /** How far back the response feed looks. Disaster response works in hours, not months. */
 export type AlertWindow = 6 | 24 | 72 | 0
 

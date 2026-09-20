@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -11,8 +11,10 @@ import {
 } from 'recharts'
 import { AXIS, MARK, STATUS, TOOLTIP_STYLE } from '@/lib/chart'
 import { expandSeries, loadTimeseries } from '@/lib/data'
-import type { SiteSeries, ThermalSite } from '@/lib/types'
+import type { ThermalSite } from '@/lib/types'
 import { EmptyState } from './EmptyState'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
 import { ChartFigure } from './ChartFigure'
 
 /**
@@ -21,11 +23,7 @@ import { ChartFigure } from './ChartFigure'
  * never against a global threshold.
  */
 export function BaselineBandChart({ site, height = 210 }: { site: ThermalSite; height?: number }) {
-  const [series, setSeries] = useState<Record<string, SiteSeries> | null>(null)
-
-  useEffect(() => {
-    loadTimeseries().then(setSeries)
-  }, [])
+  const { data: series, error, retry } = useAsyncData(loadTimeseries, 'Site baselines')
 
   const data = useMemo(() => {
     const raw = series?.[site.id]
@@ -42,7 +40,11 @@ export function BaselineBandChart({ site, height = 210 }: { site: ThermalSite; h
     return weeks.map((w) => ({ ...w, bandBase: w.low, bandSpan: Math.max(0, w.high - w.low) }))
   }, [series, site.id])
 
-  if (series && data.length === 0) {
+  // The series file is 1.45 MB, so this used to render an empty set of axes for as long as
+  // the fetch took. The box is the chart's own height, so nothing below it moves.
+  if (!series) return <PanelLoader height={height} label="Loading baselines" error={error} onRetry={retry} />
+
+  if (data.length === 0) {
     return (
       <EmptyState
         title="No baseline for this site yet"

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map, {
+  AttributionControl,
   Layer,
   NavigationControl,
   Popup,
@@ -32,6 +33,7 @@ import {
 import { ensureIncidentIcons } from './incidentIcons'
 import { BasemapToggle } from './BasemapToggle'
 import { LayerPanel } from './LayerPanel'
+import { LoadingOverlay } from '@/components/shell/Loader'
 import { ThermalLegend } from './ThermalLegend'
 import { TimeWindowPicker } from './TimeWindowPicker'
 import {
@@ -70,7 +72,11 @@ export function ThermalMap({
   onAlertSelect,
   availableLayers,
   controls = true,
+  chrome,
+  controlPosition = 'bottom-right',
+  panelSide = 'right',
   shape = 'fill',
+  tableHint = 'The site table below lists every one of them.',
   className,
 }: {
   role: Role
@@ -84,8 +90,30 @@ export function ThermalMap({
   availableLayers?: LayerId[]
   /** Off for thumbnails: the basemap toggle, layer panel, legend and window picker are hidden. */
   controls?: boolean
+  /**
+   * Which pieces of built-in chrome the map paints. Everything is on by default; a host that
+   * re-homes a control into its own bar switches just that one off. `controls={false}` still
+   * wins over all of them.
+   */
+  chrome?: Partial<Record<'basemap' | 'layers' | 'window' | 'legend', boolean>>
+  /**
+   * Which bottom corner the map's own zoom, scale bar and attribution sit in. A console puts
+   * its panels down the right-hand side, so there it moves them out from under them.
+   */
+  controlPosition?: 'bottom-right' | 'bottom-left'
+  /**
+   * Which side the basemap toggle and layer switcher sit on. A console fills the right-hand
+   * side with its own panels, so there the map's chrome gathers on the left instead of
+   * expanding into them.
+   */
+  panelSide?: 'left' | 'right'
   /** 'square' sizes the canvas from its own width, for maps in a narrow column. */
   shape?: 'fill' | 'square'
+  /**
+   * How the screen reader is told to reach the same rows as text. The default assumes a table
+   * directly below; a console that keeps its table in a drawer says so instead.
+   */
+  tableHint?: string
   className?: string
 }) {
   const mapRef = useRef<MapRef>(null)
@@ -93,6 +121,9 @@ export function ThermalMap({
   const [statesGeo, setStatesGeo] = useState<FeatureCollection | null>(null)
   const [districtsGeo, setDistrictsGeo] = useState<FeatureCollection | null>(null)
   const [hover, setHover] = useState<HoverInfo | null>(null)
+  /** Covers the first fetch of the layers the map cannot draw without. */
+  const [layersPending, setLayersPending] = useState(true)
+  const [districtsPending, setDistrictsPending] = useState(false)
   const reducedMotion = usePrefersReducedMotion()
 
   const window = useFilters((s) => s.window)
@@ -114,21 +145,35 @@ export function ThermalMap({
     [visible, availableLayers],
   )
 
+  const paints = (id: 'basemap' | 'layers' | 'window' | 'legend') => controls && chrome?.[id] !== false
+
   useEffect(() => {
-    loadDetections()
-      .then(setDetections)
-      .catch(() => logLine('ERROR', 'Detection layer could not be loaded'))
-    loadStates()
-      .then(setStatesGeo)
-      .catch(() => logLine('ERROR', 'State boundaries could not be loaded'))
+    // Both are needed before the map says anything true, so the overlay lifts when the pair
+    // settles rather than when the first one does.
+    Promise.allSettled([
+      loadDetections()
+        .then(setDetections)
+        .catch((e) => {
+          logLine('ERROR', 'Detection layer could not be loaded')
+          throw e
+        }),
+      loadStates()
+        .then(setStatesGeo)
+        .catch((e) => {
+          logLine('ERROR', 'State boundaries could not be loaded')
+          throw e
+        }),
+    ]).then(() => setLayersPending(false))
   }, [])
 
   // Districts are 1.1 MB, so they only load the first time the layer is switched on.
   useEffect(() => {
     if (!visible.districts || districtsGeo) return
+    setDistrictsPending(true)
     loadDistricts()
       .then(setDistrictsGeo)
       .catch(() => logLine('ERROR', 'District boundaries could not be loaded'))
+      .finally(() => setDistrictsPending(false))
   }, [visible.districts, districtsGeo])
 
   const days = WINDOW_DAYS[window]
@@ -294,7 +339,7 @@ export function ThermalMap({
 
   return (
     <section
-      aria-label={`${role.short} thermal map — ${sites.length} sites in view. The site table below lists every one of them.`}
+      aria-label={`${role.short} thermal map — ${sites.length} sites in view. ${tableHint}`}
       className={cn(
         'relative overflow-hidden rounded-[14px]',
         // A square canvas takes its height from its own width, so a map in a narrow column
@@ -335,7 +380,8 @@ export function ThermalMap({
           if (incidents) ensureIncidentIcons(e.target)
         }}
         cursor={hover ? 'pointer' : 'grab'}
-        attributionControl={{ compact: true }}
+        // Rendered as its own control below, so it can follow `controlPosition` too.
+        attributionControl={false}
         // Absolute rather than height:100%. Where the wrapper takes its height from a
         // min-height inside an auto-height flex column, a percentage height has nothing
         // definite to resolve against and collapses the canvas to zero.
@@ -413,8 +459,9 @@ export function ThermalMap({
             </Source>
           ))}
 
-        {controls && <NavigationControl position="bottom-right" showCompass={false} />}
-        <ScaleControl position="bottom-right" maxWidth={90} unit="metric" />
+        {controls && <NavigationControl position={controlPosition} showCompass={false} />}
+        <ScaleControl position={controlPosition} maxWidth={90} unit="metric" />
+        <AttributionControl position={controlPosition} compact />
 
         {hover && (
           <Popup longitude={hover.lon} latitude={hover.lat} closeButton={false} closeOnClick={false} offset={14}>
@@ -427,20 +474,40 @@ export function ThermalMap({
         )}
       </Map>
 
+      {layersPending && <LoadingOverlay label="Loading map layers" className="z-40" />}
+
       {controls && (
         <div className="pointer-events-none absolute inset-0 p-3">
-          <div className="pointer-events-auto absolute top-3 left-3">
-            <BasemapToggle />
-          </div>
-          <div className="pointer-events-auto absolute top-3 right-3 w-[190px]">
-            <LayerPanel available={availableLayers} />
-          </div>
+          {/* On a console both controls stack in one left-hand column: the layer switcher
+              grows downwards when it opens, and on the right it would open straight into the
+              dock column. Everywhere else they keep a corner each. */}
+          {panelSide === 'left' ? (
+            <div className="pointer-events-auto absolute top-3 left-3 flex w-[190px] flex-col items-start gap-2">
+              {paints('basemap') && <BasemapToggle />}
+              {paints('layers') && <LayerPanel available={availableLayers} busy={districtsPending} />}
+            </div>
+          ) : (
+            <>
+              {paints('basemap') && (
+                <div className="pointer-events-auto absolute top-3 left-3">
+                  <BasemapToggle />
+                </div>
+              )}
+              {paints('layers') && (
+                <div className="pointer-events-auto absolute top-3 right-3 w-[190px]">
+                  <LayerPanel available={availableLayers} busy={districtsPending} />
+                </div>
+              )}
+            </>
+          )}
           {/* One row of chrome along the bottom: the window first, the scale that reads it
               next to it, wrapping only when the map is too narrow to hold both. */}
-          <div className="pointer-events-auto absolute bottom-10 left-3 flex max-w-[calc(100%-7.5rem)] flex-wrap items-center gap-2">
-            <TimeWindowPicker />
-            <ThermalLegend />
-          </div>
+          {(paints('window') || paints('legend')) && (
+            <div className="pointer-events-auto absolute bottom-10 left-3 flex max-w-[calc(100%-7.5rem)] flex-wrap items-center gap-2">
+              {paints('window') && <TimeWindowPicker />}
+              {paints('legend') && <ThermalLegend />}
+            </div>
+          )}
         </div>
       )}
     </section>

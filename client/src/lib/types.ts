@@ -388,4 +388,4 @@ export interface Meta {
   realSources: Record<string, number>
 }
 
-export type TimeWindow = '7d' | '30d' | '1y' | 'all'
+export type TimeWindow = '3h' | '6h' | '12h' | '24h' | '3d' | '7d' | '30d' | '1y' | 'all'

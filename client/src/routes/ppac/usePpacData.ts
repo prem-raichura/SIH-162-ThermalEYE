@@ -24,7 +24,7 @@ export function usePpacSites() {
         if (classes && classes.length > 0 && !classes.includes(s.predictedClass)) return false
         if (state && s.state !== state) return false
         if (behaviour !== 'all' && s.behaviour !== behaviour) return false
-        if (window !== 'all' && !withinWindow(s.lastDetection, window)) return false
+        if (window !== 'all' && !withinWindow(s.lastDetection, window, s.id)) return false
         return true
       }),
     [hydrocarbon, classes, state, behaviour, window],

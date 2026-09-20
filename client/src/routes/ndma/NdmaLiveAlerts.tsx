@@ -1,54 +1,49 @@
-import { useMemo, useState } from 'react'
-import { AlertTriangle, ArrowUpRight, Check, FileText, Flame, Inbox, Moon, TreePine, X } from 'lucide-react'
-import { PageHeader } from '@/components/shell/PageHeader'
+import { useState } from 'react'
+import { FileText, Inbox, Moon } from 'lucide-react'
+import { ThermalMap } from '@/components/map/ThermalMap'
+import { MapConsole } from '@/components/map/MapConsole'
+import { AlertWindowPicker } from '@/components/map/AlertWindowPicker'
+import { MapDock } from '@/components/map/MapDock'
+import { ReadingsStrip, type Reading } from '@/components/map/ReadingsStrip'
 import { Panel } from '@/components/panels/Panel'
-import { StatTile } from '@/components/panels/StatTile'
-import { AlertStream } from '@/components/panels/AlertStream'
 import { AlertDetail } from '@/components/panels/AlertDetail'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { PASS_INTERVAL_MS, useFirmsPass, useNdmaFeed, type FeedAlert } from './useNdmaData'
-import { useNdma, type Disposition } from '@/store/useNdma'
+import { Actions } from './alertActions'
+import { alertSites, useFirmsPass, useNdmaFeed, type FeedAlert } from './useNdmaData'
+import { DISPOSITION_LABEL, useNdma, type Disposition } from '@/store/useNdma'
 import { ROUTE_LABEL } from '@/lib/severity'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
-import { istClock, nf } from '@/lib/format'
+import { nf } from '@/lib/format'
+import { useNavigate } from 'react-router-dom'
 import type { Alert } from '@/lib/types'
 import type { Role } from '@/lib/roles'
 
-const DISPOSITION_LABEL: Record<Disposition, string> = {
-  acknowledged: 'Acknowledged',
-  escalated: 'Escalated',
-  dismissed: 'Dismissed',
-}
+const TABLE_HINT = 'The full alert list, with the same acknowledge and escalate actions, is on the Alert Queue page.'
+
+const LATENCY_NOTE =
+  'Near-real-time, not zero-latency: detections arrive with each satellite pass, so a new event shows up within the pass interval rather than the instant it starts. The pass on this screen is a local timer over the static dataset.'
 
 /**
- * The response feed. Severity is re-binned live from the Severity Settings configuration, so
+ * The response map. Severity is re-binned live from the Severity Settings configuration, so
  * what a duty officer sees here is whatever policy is currently set — never a fixed list.
+ *
+ * Placing the incident comes first, so the map is the page and the alert that is selected on
+ * it carries its own disposition controls. Working the backlog as a list is the queue page.
  */
 export function NdmaLiveAlerts({ role }: { role: Role }) {
+  const navigate = useNavigate()
   const feed = useNdmaFeed()
   const selectAlert = useNdma((s) => s.selectAlert)
   const setDisposition = useNdma((s) => s.setDisposition)
   const config = useNdma((s) => s.config)
-  const passes = useNdma((s) => s.passes)
   const selectSite = useFilters((s) => s.selectSite)
   const openDetail = useFilters((s) => s.openDetail)
   const [reportFor, setReportFor] = useState<string | null>(null)
 
   useFirmsPass(role.id, feed.queue)
-
-  const tabs = useMemo(
-    () => [
-      { id: 'active', label: 'Active', rows: feed.active },
-      { id: 'acknowledged', label: 'Acknowledged', rows: feed.acknowledged },
-      { id: 'escalated', label: 'Escalated', rows: feed.escalated },
-      { id: 'dismissed', label: 'Dismissed', rows: feed.dismissed },
-    ],
-    [feed.active, feed.acknowledged, feed.escalated, feed.dismissed],
-  )
 
   const onSelect = (alert: Alert) => {
     selectAlert(alert.id)
@@ -68,211 +63,167 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
     )
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        role={role}
-        eyebrow="Response"
-        title="Live alerts"
-        description="Every row states what a site is doing now against its own historical normal. Severity is deviation from that normal, not a national FRP threshold."
-        meta={[
-          { label: 'In feed', value: nf(feed.visible.length) },
-          { label: 'Inbound', value: nf(feed.queue.length) },
-          { label: 'Passes', value: nf(passes) },
-          { label: 'Time (IST)', value: istClock() },
-        ]}
-        action="Generate report"
-        onAction={() => {
-          const target = feed.selected?.siteId ?? feed.active[0]?.siteId ?? null
-          setReportFor(target)
-          logLine(role.id, 'Evidence report generated from the live feed')
-        }}
-      />
+  const readings: Reading[] = [
+    { label: 'High', value: nf(feed.counts.high), tone: 'critical' },
+    { label: 'Medium', value: nf(feed.counts.medium), tone: 'warning' },
+    { label: 'Inbound', value: nf(feed.queue.length) },
+  ]
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile
-          icon={AlertTriangle}
-          label="High severity"
-          value={nf(feed.counts.high)}
-          caption="Paged immediately, quiet hours included"
-          tone="critical"
-        />
-        <StatTile icon={Flame} label="Medium severity" value={nf(feed.counts.medium)} caption="District control room" tone="warning" />
-        <StatTile icon={TreePine} label="Low severity" value={nf(feed.counts.low)} caption="Logged, nobody paged" tone="good" />
-        <StatTile
-          icon={Inbox}
-          label="Inbound queue"
-          value={nf(feed.queue.length)}
-          caption={`One released every ${PASS_INTERVAL_MS / 1000} s · ${nf(passes)} passes so far`}
-        />
-      </div>
+  const hasFeedNote = feed.suppressedCount > 0 || feed.outsideWindow > 0 || feed.quiet
 
-      {(feed.suppressedCount > 0 || feed.outsideWindow > 0 || feed.quiet) && (
-        <div className="text-ink-soft flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12px]">
-          {feed.suppressedCount > 0 && (
-            <span>
-              <span className="tnum font-mono">{nf(feed.suppressedCount)}</span> held back by the confidence floor and
-              class filters
-            </span>
-          )}
-          {feed.outsideWindow > 0 && (
-            <span>
-              <span className="tnum font-mono">{nf(feed.outsideWindow)}</span> older than the current window
-            </span>
-          )}
-          {feed.quiet && (
-            <span className="inline-flex items-center gap-1.5">
-              <Moon size={12} strokeWidth={1.9} />
-              Quiet hours — only high severity pages
-            </span>
-          )}
-        </div>
+  const feedNote = (
+    <div className="text-ink-soft flex flex-col gap-1.5 text-[12px]">
+      {feed.suppressedCount > 0 && (
+        <span>
+          <span className="tnum font-mono">{nf(feed.suppressedCount)}</span> held back by the confidence floor and class
+          filters
+        </span>
       )}
+      {feed.outsideWindow > 0 && (
+        <span>
+          <span className="tnum font-mono">{nf(feed.outsideWindow)}</span> older than the current window
+        </span>
+      )}
+      {feed.quiet && (
+        <span className="inline-flex items-center gap-1.5">
+          <Moon size={12} strokeWidth={1.9} />
+          Quiet hours — only high severity pages
+        </span>
+      )}
+    </div>
+  )
 
-      <div className="grid gap-3 xl:grid-cols-[1.05fr_1fr]">
-        <Panel title="Alert location details" subtitle="Model evidence and contextual evidence, kept apart">
-          <AlertDetail
-            role={role}
-            alert={feed.selected}
-            site={feed.selected?.site}
-            routing={feed.selected?.routing}
-            actions={
-              feed.selected && (
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5 rounded-[9px]"
-                    onClick={() => {
-                      selectSite(feed.selected?.siteId ?? null)
-                      openDetail()
-                      logLine(role.id, `Full record opened for ${feed.selected?.siteName}`)
-                    }}
-                  >
-                    Full record
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="gap-1.5 rounded-[9px]"
-                    onClick={() => {
-                      setReportFor(feed.selected?.siteId ?? null)
-                      logLine(role.id, `Evidence report generated for ${feed.selected?.siteName}`)
-                    }}
-                  >
-                    <FileText size={14} strokeWidth={1.8} />
-                    Evidence report
-                  </Button>
-                </div>
-              )
-            }
-          />
-        </Panel>
+  const detail = (
+    <AlertDetail
+      role={role}
+      alert={feed.selected}
+      site={feed.selected?.site}
+      routing={feed.selected?.routing}
+      showThumbnail={false}
+      compactEmpty
+      emptyBody="Click an incident on the map. Its location, what it is doing against its own normal, and the actions you can take on it open here."
+      actions={
+        feed.selected && (
+          <div className="flex flex-col gap-2.5">
+            {/* The three verbs sit with the evidence, so a decision needs no second screen. */}
+            <Actions
+              alert={feed.selected}
+              size="md"
+              onDispose={dispose}
+              onClear={(a) => {
+                setDisposition(a.id, null)
+                logLine(role.id, `Returned ${a.id} to the active queue`)
+              }}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 rounded-[9px]"
+                onClick={() => {
+                  selectSite(feed.selected?.siteId ?? null)
+                  openDetail()
+                  logLine(role.id, `Full record opened for ${feed.selected?.siteName}`)
+                }}
+              >
+                Full record
+              </Button>
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-[9px]"
+                onClick={() => {
+                  setReportFor(feed.selected?.siteId ?? null)
+                  logLine(role.id, `Evidence report generated for ${feed.selected?.siteName}`)
+                }}
+              >
+                <FileText size={14} strokeWidth={1.8} />
+                Evidence report
+              </Button>
+            </div>
+          </div>
+        )
+      }
+    />
+  )
 
-        <div className="relative min-h-[560px]">
-          <Panel
-            title="Alert stream"
-            subtitle={`${nf(feed.visible.length)} in the current window · newest first`}
-            className="absolute inset-0"
-          >
-            <Tabs defaultValue="active" className="min-h-0 flex-1">
-              <TabsList className="w-full">
-                {tabs.map((tab) => (
-                  <TabsTrigger key={tab.id} value={tab.id} className="text-[12px]">
-                    {tab.label} ({nf(tab.rows.length)})
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+  const map = (fullBleed: boolean) => (
+    <ThermalMap
+      role={role}
+      sites={alertSites(feed.visible)}
+      unmapped={[]}
+      alerts={feed.visible}
+      alertMode="incidents"
+      availableLayers={['thermal', 'sites', 'boundary', 'districts']}
+      chrome={fullBleed ? { window: false, legend: false } : undefined}
+      controlPosition={fullBleed ? 'bottom-left' : 'bottom-right'}
+      panelSide={fullBleed ? 'left' : 'right'}
+      tableHint={TABLE_HINT}
+      className={fullBleed ? 'absolute inset-0 rounded-none' : 'h-[420px]'}
+      onAlertSelect={onSelect}
+    />
+  )
 
-              {tabs.map((tab) => (
-                <TabsContent key={tab.id} value={tab.id} className="min-h-0 flex-1 data-[state=inactive]:hidden">
-                  <AlertStream
-                    alerts={tab.rows}
-                    fill
-                    showConfidence
-                    selectedId={feed.selected?.id ?? null}
-                    onSelect={onSelect}
-                    renderActions={(alert) => (
-                      <Actions
-                        alert={alert as FeedAlert}
-                        onDispose={dispose}
-                        onClear={(a) => {
-                          setDisposition(a.id, null)
-                          logLine(role.id, `Returned ${a.id} to the active queue`)
-                        }}
-                      />
-                    )}
-                  />
-                </TabsContent>
-              ))}
-            </Tabs>
-          </Panel>
-        </div>
-      </div>
+  return (
+    <>
+      <MapConsole
+        role={role}
+        title="Live alerts"
+        readings={readings}
+        timeControl={<AlertWindowPicker />}
+        listAction={{ label: 'Alert queue', onClick: () => navigate('/ndma/queue') }}
+        action={{
+          label: 'Generate report',
+          onClick: () => {
+            setReportFor(feed.selected?.siteId ?? feed.active[0]?.siteId ?? null)
+            logLine(role.id, 'Evidence report generated from the live feed')
+          },
+        }}
+        map={map(true)}
+        docks={
+          <>
+            <MapDock title="Alert details" summary={feed.selected?.severity} grow>
+              {detail}
+              <p className="text-ink-faint mt-3 text-[11px]">{LATENCY_NOTE}</p>
+            </MapDock>
+            <MapDock
+              title="Inbound"
+              summary={`${nf(feed.queue.length)} waiting`}
+              defaultOpen={false}
+              maxBodyHeight={180}
+            >
+              {hasFeedNote ? (
+                feedNote
+              ) : (
+                <p className="text-ink-soft inline-flex items-center gap-1.5 text-[12px]">
+                  <Inbox size={13} strokeWidth={1.8} />
+                  Nothing held back. Every alert in the window is on the map.
+                </p>
+              )}
+            </MapDock>
+          </>
+        }
+        fallback={
+          <div className="flex flex-col gap-4">
+            <div className="bg-card border-line rounded-[14px] border px-4 py-3">
+              <h2 className="font-display text-[22px] leading-none">Live alerts</h2>
+              <ReadingsStrip items={readings} className="mt-3 flex-wrap" />
+            </div>
 
-      <p className="text-ink-faint text-[11.5px]">
-        Near-real-time and continuously updated, not zero-latency: detections arrive with each satellite pass, so a new
-        event is visible within the pass interval rather than the instant it starts. The pass on this screen is a local
-        timer over the static dataset — the app holds no live connection.
-      </p>
+            {hasFeedNote && feedNote}
+
+            {map(false)}
+
+            <Panel title="Alert details" subtitle="Model evidence and contextual evidence, kept apart">
+              {detail}
+            </Panel>
+
+            <p className="text-ink-faint text-[11.5px]">{LATENCY_NOTE}</p>
+          </div>
+        }
+      />
 
       <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
-    </div>
-  )
-}
-
-function Actions({
-  alert,
-  onDispose,
-  onClear,
-}: {
-  alert: FeedAlert
-  onDispose: (alert: FeedAlert, disposition: Disposition) => void
-  onClear: (alert: FeedAlert) => void
-}) {
-  if (alert.disposition) {
-    return (
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation()
-          onClear(alert)
-        }}
-        className="text-ink-faint hover:text-ink inline-flex items-center gap-1 text-[10.5px] underline-offset-4 hover:underline"
-      >
-        <Check size={11} /> {DISPOSITION_LABEL[alert.disposition]} — undo
-      </button>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-1">
-      <Action label="Acknowledge" onClick={() => onDispose(alert, 'acknowledged')}>
-        <Check size={11} /> Ack
-      </Action>
-      <Action label="Escalate" onClick={() => onDispose(alert, 'escalated')}>
-        <ArrowUpRight size={11} /> Escalate
-      </Action>
-      <Action label="Dismiss" onClick={() => onDispose(alert, 'dismissed')}>
-        <X size={11} />
-      </Action>
-    </div>
-  )
-}
-
-function Action({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick()
-      }}
-      className="border-line hover:border-ink-faint inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px]"
-    >
-      {children}
-    </button>
+    </>
   )
 }

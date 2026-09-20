@@ -32,7 +32,7 @@ export function useIbmSites() {
       mines.filter((s) => {
         if (state && s.state !== state) return false
         if (behaviour !== 'all' && s.behaviour !== behaviour) return false
-        if (window !== 'all' && !withinWindow(s.lastDetection, window)) return false
+        if (window !== 'all' && !withinWindow(s.lastDetection, window, s.id)) return false
         return true
       }),
     [mines, state, behaviour, window],

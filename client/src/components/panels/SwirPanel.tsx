@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Flame } from 'lucide-react'
 import { loadSpectral } from '@/lib/data'
-import type { SpectralEntry } from '@/lib/types'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
 import { EmptyState } from './EmptyState'
-import { Skeleton } from '@/components/ui/skeleton'
 import { QualityChip } from './QualityChip'
 
 /**
@@ -13,13 +12,9 @@ import { QualityChip } from './QualityChip'
  * required: this corroborates the retrieval rather than driving it.
  */
 export function SwirPanel({ siteId, siteName }: { siteId: string; siteName: string }) {
-  const [spectral, setSpectral] = useState<Record<string, SpectralEntry> | null>(null)
+  const { data: spectral, error, retry } = useAsyncData(loadSpectral, 'Sentinel-2 indices')
 
-  useEffect(() => {
-    loadSpectral().then(setSpectral)
-  }, [])
-
-  if (!spectral) return <Skeleton className="h-[150px] w-full rounded-[10px]" />
+  if (!spectral) return <PanelLoader height={150} error={error} onRetry={retry} />
   const entry = spectral[siteId]
 
   if (!entry?.available || entry.swirHotUnits === null) {

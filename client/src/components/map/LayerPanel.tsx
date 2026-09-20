@@ -2,13 +2,21 @@ import { useState } from 'react'
 import { ChevronDown, Eye, EyeOff, Layers as LayersIcon } from 'lucide-react'
 import { LAYERS, useLayers, type LayerId } from '@/store/useLayers'
 import { logLine } from '@/store/useConsole'
+import { BrandSpinner } from '@/components/shell/BrandSpinner'
 import { cn } from '@/lib/utils'
 
 /**
  * The layer switcher, collapsible. Expanded it covers a useful part of a small map, so the
  * header folds it down to a single bar that still reports how many layers are on.
  */
-export function LayerPanel({ available }: { available?: LayerId[] }) {
+export function LayerPanel({
+  available,
+  busy = false,
+}: {
+  available?: LayerId[]
+  /** A layer's file is still arriving — districts is 1.1 MB and used to look like a dead toggle. */
+  busy?: boolean
+}) {
   const visible = useLayers((s) => s.visible)
   const toggle = useLayers((s) => s.toggle)
   // Folded by default: the map is the thing worth looking at, and the header still reports
@@ -31,6 +39,7 @@ export function LayerPanel({ available }: { available?: LayerId[] }) {
         <span className="text-ink-faint tnum font-mono text-[10.5px]">
           {onCount}/{rows.length}
         </span>
+        {busy && <BrandSpinner size="sm" className="scale-[0.6]" />}
         <ChevronDown
           size={15}
           strokeWidth={1.9}

@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
 import { TrendChart } from './TrendChart'
 import { QualityChip } from './QualityChip'
 import { EmptyState } from './EmptyState'
 import { loadSpectral } from '@/lib/data'
-import type { SpectralEntry } from '@/lib/types'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useAsyncData } from '@/hooks/useAsyncData'
+import { PanelLoader } from '@/components/shell/Loader'
 
 /**
  * Sentinel-2 before/after evidence (section 9). Optical data is frequently missing, so the
@@ -12,13 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton'
  * instead of drawing a flat line.
  */
 export function SpectralIndexChart({ siteId, height = 190 }: { siteId: string; height?: number }) {
-  const [spectral, setSpectral] = useState<Record<string, SpectralEntry> | null>(null)
+  const { data: spectral, error, retry } = useAsyncData(loadSpectral, 'Sentinel-2 indices')
 
-  useEffect(() => {
-    loadSpectral().then(setSpectral)
-  }, [])
-
-  if (!spectral) return <Skeleton className="h-[190px] w-full rounded-[10px]" />
+  if (!spectral) return <PanelLoader height={190} error={error} onRetry={retry} />
   const entry = spectral[siteId]
   if (!entry) return null
 

@@ -26,7 +26,8 @@ interface FilterState {
 }
 
 const base = {
-  window: '1y' as TimeWindow,
+  // Opens on the most recent acquisition day, not a year of history.
+  window: '24h' as TimeWindow,
   classes: null,
   state: null,
   behaviour: 'all' as const,
