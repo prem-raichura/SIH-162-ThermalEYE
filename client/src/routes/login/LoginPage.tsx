@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { Brand } from '@/components/shell/Brand'
@@ -12,6 +12,10 @@ const FIELD =
   'login-field border-line bg-paper flex items-center gap-2.5 rounded-[10px] border px-3 py-2.5 transition-[color,background-color,border-color,box-shadow]'
 const LABEL = 'text-ink-faint block text-[10px] tracking-[0.1em] uppercase'
 
+/** How long the demo password stays legible before it masks itself again. */
+const DEMO_PASSWORD_REVEAL_MS = 60_000
+const DEMO_PASSWORD_MASK = '*'.repeat(DEMO_PASSWORD.length)
+
 export function LoginPage() {
   const navigate = useNavigate()
   const signIn = useRoleStore((s) => s.signIn)
@@ -21,6 +25,15 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [reveal, setReveal] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // The shared demo password starts masked and re-masks itself, so a screen left open on the
+  // login page does not sit there showing a working credential.
+  const [showDemoPassword, setShowDemoPassword] = useState(false)
+
+  useEffect(() => {
+    if (!showDemoPassword) return
+    const id = window.setTimeout(() => setShowDemoPassword(false), DEMO_PASSWORD_REVEAL_MS)
+    return () => window.clearTimeout(id)
+  }, [showDemoPassword])
 
   if (signedInAs) return <Navigate to={`/${signedInAs}`} replace />
 
@@ -150,12 +163,19 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    if (showDemoPassword) {
+                      setShowDemoPassword(false)
+                      return
+                    }
+                    setShowDemoPassword(true)
                     setPassword(DEMO_PASSWORD)
                     setError(null)
                   }}
+                  aria-pressed={showDemoPassword}
+                  title={showDemoPassword ? 'Hide the demo password' : 'Show the demo password and fill the form'}
                   className="text-ink hover:bg-paper-deep rounded px-1 py-0.5 font-mono text-[11.5px] transition-colors"
                 >
-                  {DEMO_PASSWORD}
+                  {showDemoPassword ? DEMO_PASSWORD : DEMO_PASSWORD_MASK}
                 </button>
               </span>
             </div>
