@@ -12,10 +12,8 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Button } from '@/components/ui/button'
 import { Actions } from './alertActions'
 import { alertSites, useFirmsPass, useNdmaFeed, type FeedAlert } from './useNdmaData'
-import { DISPOSITION_LABEL, useNdma, type Disposition } from '@/store/useNdma'
-import { ROUTE_LABEL } from '@/lib/severity'
+import { useNdma, type Disposition } from '@/store/useNdma'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
 import type { Alert } from '@/lib/types'
@@ -38,7 +36,6 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
   const feed = useNdmaFeed()
   const selectAlert = useNdma((s) => s.selectAlert)
   const setDisposition = useNdma((s) => s.setDisposition)
-  const config = useNdma((s) => s.config)
   const selectSite = useFilters((s) => s.selectSite)
   const openDetail = useFilters((s) => s.openDetail)
   const [reportFor, setReportFor] = useState<string | null>(null)
@@ -48,19 +45,12 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
   const onSelect = (alert: Alert) => {
     selectAlert(alert.id)
     selectSite(alert.siteId)
-    logLine(role.id, `Opened alert ${alert.id} — ${alert.siteName}, ${alert.severity} severity`)
   }
 
   // Escalating overrides the tier's own destination and sends the alert up the high-severity
   // route — that is what escalation means to a duty officer.
   const dispose = (alert: FeedAlert, disposition: Disposition) => {
     setDisposition(alert.id, disposition)
-    logLine(
-      role.id,
-      `${DISPOSITION_LABEL[disposition]} ${alert.id} — ${alert.siteName}${
-        disposition === 'escalated' ? ` · sent to ${ROUTE_LABEL[config.routing.high]}` : ''
-      }`,
-    )
   }
 
   const readings: Reading[] = [
@@ -112,7 +102,6 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
               onDispose={dispose}
               onClear={(a) => {
                 setDisposition(a.id, null)
-                logLine(role.id, `Returned ${a.id} to the active queue`)
               }}
             />
             <div className="flex flex-wrap gap-2">
@@ -123,7 +112,6 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
                 onClick={() => {
                   selectSite(feed.selected?.siteId ?? null)
                   openDetail()
-                  logLine(role.id, `Full record opened for ${feed.selected?.siteName}`)
                 }}
               >
                 Full record
@@ -133,7 +121,6 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
                 className="gap-1.5 rounded-[9px]"
                 onClick={() => {
                   setReportFor(feed.selected?.siteId ?? null)
-                  logLine(role.id, `Evidence report generated for ${feed.selected?.siteName}`)
                 }}
               >
                 <FileText size={14} strokeWidth={1.8} />
@@ -175,7 +162,6 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
           label: 'Generate report',
           onClick: () => {
             setReportFor(feed.selected?.siteId ?? feed.active[0]?.siteId ?? null)
-            logLine(role.id, 'Evidence report generated from the live feed')
           },
         }}
         map={map(true)}
@@ -222,7 +208,7 @@ export function NdmaLiveAlerts({ role }: { role: Role }) {
         }
       />
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </>
   )

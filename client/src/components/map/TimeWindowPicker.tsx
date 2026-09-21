@@ -1,7 +1,6 @@
 import { Check, ChevronDown, History } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { cn } from '@/lib/utils'
 import { HISTORY, RECENT, type WindowOption } from '@/lib/timeWindows'
 
@@ -19,7 +18,6 @@ export function TimeWindowPicker({ className }: { className?: string }) {
 
   const pick = (option: WindowOption) => {
     setWindow(option.id)
-    logLine('INFO', `Time window set to ${option.full.toLowerCase()}`)
   }
 
   return (

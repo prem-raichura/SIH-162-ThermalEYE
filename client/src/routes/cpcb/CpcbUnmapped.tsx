@@ -8,7 +8,6 @@ import { QualityChip } from '@/components/panels/QualityChip'
 import { StatTile } from '@/components/panels/StatTile'
 import { useUnmappedQueue } from './useCpcbData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { tHotColor } from '@/lib/thermal'
 import { coord, days, kelvin, nf, shortDate } from '@/lib/format'
 import { Radar, ShieldQuestion, Thermometer } from 'lucide-react'
@@ -74,7 +73,6 @@ export function CpcbUnmapped({ role }: { role: Role }) {
               selectedId={selected?.id ?? null}
               onSelect={(row) => {
                 selectUnmapped(row.id)
-                logLine(role.id, `Inspecting unmapped candidate #${row.rank} — ${row.state}`)
               }}
             />
           </Panel>

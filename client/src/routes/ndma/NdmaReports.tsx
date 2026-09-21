@@ -12,7 +12,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useNdmaFeed } from './useNdmaData'
 import { useNdma } from '@/store/useNdma'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { ROUTE_LABEL, SEVERITY_LABEL, SEVERITY_ORDER, type RouteId } from '@/lib/severity'
 import { SEVERITY_COLOR } from '@/lib/thermal'
 import { nf } from '@/lib/format'
@@ -49,7 +48,6 @@ export function NdmaReports({ role }: { role: Role }) {
         action="Generate report"
         onAction={() => {
           setReportFor(selected?.siteId ?? null)
-          logLine(role.id, `Evidence report generated for ${selected?.siteName ?? 'the selected incident'}`)
         }}
       />
 
@@ -64,7 +62,6 @@ export function NdmaReports({ role }: { role: Role }) {
               onSelect={(alert) => {
                 selectAlert(alert.id)
                 selectSite(alert.siteId)
-                logLine(role.id, `Loaded evidence for ${alert.siteName}`)
               }}
             />
           </Panel>
@@ -82,7 +79,6 @@ export function NdmaReports({ role }: { role: Role }) {
                     className="gap-1.5 rounded-[9px]"
                     onClick={() => {
                       setReportFor(selected.siteId)
-                      logLine(role.id, `Evidence report generated for ${selected.siteName}`)
                     }}
                   >
                     <FileText size={14} strokeWidth={1.8} />
@@ -136,7 +132,7 @@ export function NdmaReports({ role }: { role: Role }) {
         )}
       </Panel>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

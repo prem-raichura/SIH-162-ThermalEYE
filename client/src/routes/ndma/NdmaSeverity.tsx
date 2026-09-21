@@ -7,7 +7,6 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNdmaFeed } from './useNdmaData'
 import { useNdma } from '@/store/useNdma'
-import { logLine } from '@/store/useConsole'
 import {
   DEFAULT_SEVERITY_CONFIG,
   ROUTES,
@@ -78,7 +77,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
             className="gap-1.5 rounded-[9px]"
             onClick={() => {
               resetConfig()
-              logLine(role.id, 'Severity policy reset to the shipped defaults')
             }}
           >
             <RotateCcw size={13} strokeWidth={1.8} />
@@ -124,7 +122,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
               step={5}
               value={config.highPct}
               onChange={(e) => setBand('highPct', Number(e.target.value))}
-              onMouseUp={() => logLine(role.id, `High-severity band set to +${config.highPct}% over normal`)}
               className="accent-terracotta w-48"
             />
           </Row>
@@ -136,7 +133,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
               step={5}
               value={config.mediumPct}
               onChange={(e) => setBand('mediumPct', Number(e.target.value))}
-              onMouseUp={() => logLine(role.id, `Medium-severity band set to +${config.mediumPct}% over normal`)}
               className="accent-terracotta w-48"
             />
           </Row>
@@ -152,7 +148,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
               step={0.05}
               value={config.minConfidence}
               onChange={(e) => setMinConfidence(Number(e.target.value))}
-              onMouseUp={() => logLine(role.id, `Confidence floor set to ${config.minConfidence.toFixed(2)}`)}
               className="accent-terracotta w-48"
             />
           </Row>
@@ -169,7 +164,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
                 value={config.routing[severity]}
                 onValueChange={(value) => {
                   setRoute(severity, value as RouteId)
-                  logLine(role.id, `${SEVERITY_LABEL[severity]} severity now routes to ${value.replace('_', ' ')}`)
                 }}
               >
                 <SelectTrigger className="h-8 w-[200px] text-[12.5px]">
@@ -196,7 +190,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
                 checked={config.quietHours.enabled}
                 onCheckedChange={(on) => {
                   setQuietHours({ enabled: on })
-                  logLine(role.id, `Quiet hours ${on ? 'enabled' : 'disabled'}`)
                 }}
               />
               <HourSelect
@@ -204,7 +197,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
                 disabled={!config.quietHours.enabled}
                 onChange={(from) => {
                   setQuietHours({ from })
-                  logLine(role.id, `Quiet hours start ${String(from).padStart(2, '0')}:00 IST`)
                 }}
               />
               <span className="text-ink-faint text-[12px]">to</span>
@@ -213,7 +205,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
                 disabled={!config.quietHours.enabled}
                 onChange={(to) => {
                   setQuietHours({ to })
-                  logLine(role.id, `Quiet hours end ${String(to).padStart(2, '0')}:00 IST`)
                 }}
               />
             </div>
@@ -235,7 +226,6 @@ export function NdmaSeverity({ role }: { role: Role }) {
                   type="button"
                   onClick={() => {
                     toggleClass(cls)
-                    logLine(role.id, `${CLASS_LABELS[cls]} ${on ? 'excluded from' : 'included in'} the response feed`)
                   }}
                   className={cn(
                     'border-line rounded-full border px-2.5 py-1 text-[11.5px]',

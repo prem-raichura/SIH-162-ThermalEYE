@@ -5,9 +5,7 @@ import { INDIA_BOUNDS, offlineStyle } from '@/lib/mapStyle'
 import { loadStates, model } from '@/lib/data'
 import { useAsyncData } from '@/hooks/useAsyncData'
 import { LoadingOverlay } from '@/components/shell/Loader'
-import { logLine } from '@/store/useConsole'
 import { nf, pct } from '@/lib/format'
-import type { RoleId } from '@/lib/roles'
 import type { HoldoutRegion } from '@/lib/types'
 
 const TRAINING_FILL = 'rgba(47, 110, 122, 0.20)'
@@ -29,7 +27,7 @@ interface Hover {
  * the argument: the test region is a contiguous block of the country, not a random scatter of
  * points taken from facilities the model already learned.
  */
-export function HoldoutMap({ role }: { role: RoleId }) {
+export function HoldoutMap() {
   const [hover, setHover] = useState<Hover | null>(null)
   // The state fills are the whole figure, so an uncovered load is a blank map that looks
   // like the split itself is missing.
@@ -83,9 +81,6 @@ export function HoldoutMap({ role }: { role: RoleId }) {
         interactiveLayerIds={statesGeo ? ['holdout-fill'] : []}
         onMouseMove={onMove}
         onMouseLeave={() => setHover(null)}
-        onClick={() => {
-          if (hover) logLine(role, `${hover.state} sits in the ${hover.region} region — ${hover.role}`)
-        }}
         cursor={hover ? 'pointer' : 'grab'}
         attributionControl={{ compact: true }}
         style={{ width: '100%', height: '100%' }}

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
 import { DEFAULT_PROVENANCE, useNrsc } from '@/store/useNrsc'
 import { useNrscData } from './useNrscData'
-import { logLine } from '@/store/useConsole'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
 
@@ -78,7 +77,6 @@ export function NrscSettings({ role }: { role: Role }) {
         subtitle="What a record must carry before it is republished"
         onReset={() => {
           resetProvenance()
-          logLine(role.id, 'Provenance floors reset to the shipped defaults')
         }}
       >
         {FLOORS.map((f) => (
@@ -95,7 +93,6 @@ export function NrscSettings({ role }: { role: Role }) {
               step={f.step}
               value={provenance[f.key]}
               onChange={(e) => setProvenance(f.key, Number(e.target.value))}
-              onMouseUp={() => logLine(role.id, `${f.label} set to ${provenance[f.key].toFixed(f.digits)}`)}
               aria-label={f.label}
               style={{ accentColor: 'var(--role-accent)' }}
               className="w-44"
@@ -116,7 +113,6 @@ export function NrscSettings({ role }: { role: Role }) {
             onClick={() => {
               setProvenance('register', DEFAULT_PROVENANCE.register)
               resetProvenance()
-              logLine(role.id, 'Publication policy reset')
             }}
           >
             <RotateCcw size={13} strokeWidth={1.8} />

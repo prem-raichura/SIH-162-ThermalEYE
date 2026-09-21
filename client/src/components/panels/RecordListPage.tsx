@@ -6,7 +6,6 @@ import { SiteCard } from '@/components/panels/SiteCard'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { MetaItem } from '@/components/shell/PageHeader'
@@ -75,7 +74,6 @@ export function RecordListPage({
               emptyBody={emptyBody}
               onRowClick={(site) => {
                 selectSite(site.id)
-                logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
               }}
             />
           </Panel>
@@ -93,7 +91,7 @@ export function RecordListPage({
         </Panel>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

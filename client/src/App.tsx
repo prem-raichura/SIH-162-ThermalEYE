@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes, useParams } from 'react-router-dom'
 import { LoadingOverlay } from '@/components/shell/Loader'
 import { RouteTransition } from '@/components/shell/RouteTransition'
+import { ErrorBoundary } from '@/components/shell/ErrorBoundary'
 import { RoleRoute } from '@/routes/RoleRoute'
 import { LoginPage } from '@/routes/login/LoginPage'
 import { NotFound } from '@/routes/NotFound'
@@ -23,9 +24,11 @@ function Section() {
   if (Page)
     return (
       <RouteTransition key={`${role.id}/${section ?? ''}`}>
-        <Suspense fallback={<LoadingOverlay />}>
-          <Page role={role} />
-        </Suspense>
+        <ErrorBoundary where={sectionTitle(role, section)}>
+          <Suspense fallback={<LoadingOverlay />}>
+            <Page role={role} />
+          </Suspense>
+        </ErrorBoundary>
       </RouteTransition>
     )
 
@@ -47,17 +50,19 @@ function Entry() {
 export default function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Entry />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/:role" element={<RoleRoute />}>
-          <Route index element={<Section />} />
-        </Route>
-        <Route path="/:role/:section" element={<RoleRoute />}>
-          <Route index element={<Section />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <ErrorBoundary where="The app">
+        <Routes>
+          <Route path="/" element={<Entry />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/:role" element={<RoleRoute />}>
+            <Route index element={<Section />} />
+          </Route>
+          <Route path="/:role/:section" element={<RoleRoute />}>
+            <Route index element={<Section />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ErrorBoundary>
     </Router>
   )
 }

@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom'
 import { Brand } from './Brand'
 import { cn } from '@/lib/utils'
 import { rolePath, type Role } from '@/lib/roles'
-import { logLine } from '@/store/useConsole'
 
 export function Rail({ role, compact }: { role: Role; compact: boolean }) {
   return (
@@ -24,7 +23,6 @@ export function Rail({ role, compact }: { role: Role; compact: boolean }) {
               to={rolePath(role, item.path)}
               end={item.path === ''}
               title={compact ? item.label : undefined}
-              onClick={() => logLine(role.id, `Opened ${item.label}`)}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13.5px] transition-colors',

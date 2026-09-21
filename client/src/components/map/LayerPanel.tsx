@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, Eye, EyeOff, Layers as LayersIcon } from 'lucide-react'
 import { LAYERS, useLayers, type LayerId } from '@/store/useLayers'
-import { logLine } from '@/store/useConsole'
 import { BrandSpinner } from '@/components/shell/BrandSpinner'
 import { cn } from '@/lib/utils'
 
@@ -57,7 +56,6 @@ export function LayerPanel({
                   type="button"
                   onClick={() => {
                     toggle(layer.id)
-                    logLine('INFO', `${layer.label} layer ${on ? 'hidden' : 'shown'}`)
                   }}
                   aria-pressed={on}
                   className={cn(

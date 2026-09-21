@@ -11,7 +11,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { candidateRank, useIbmSites } from './useIbmData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
@@ -44,7 +43,6 @@ export function IbmOverview({ role }: { role: Role }) {
 
   const generateReport = () => {
     setReportFor(selectedSiteId ?? filtered[0]?.id ?? null)
-    logLine(role.id, 'Evidence report generated from the overview')
   }
 
 
@@ -66,7 +64,6 @@ export function IbmOverview({ role }: { role: Role }) {
       showAssessment={false}
       onSelect={(row) => {
         selectUnmapped(row.id)
-        logLine(role.id, `Selected candidate #${row.rank} — ${row.state}`)
       }}
     />
   )
@@ -134,7 +131,7 @@ export function IbmOverview({ role }: { role: Role }) {
         }
       />
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </>
   )

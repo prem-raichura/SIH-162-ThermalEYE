@@ -5,7 +5,6 @@ import { DistributionDonut } from '@/components/panels/DistributionDonut'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useIbmSites } from './useIbmData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { landcover } from '@/lib/data'
 import { LANDCOVER_COLORS, LANDCOVER_LABEL } from '@/lib/chart'
 import { nf } from '@/lib/format'
@@ -113,7 +112,6 @@ export function IbmLandCover({ role }: { role: Role }) {
                   key={site.id}
                   onClick={() => {
                     selectSite(site.id)
-                    logLine(role.id, `Selected ${site.name} — ${mix.bare}% bare ground`)
                   }}
                   className={cn('hover:bg-paper-deep cursor-pointer', selectedSiteId === site.id && 'bg-paper-deep')}
                 >
@@ -131,7 +129,7 @@ export function IbmLandCover({ role }: { role: Role }) {
         </div>
       </Panel>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

@@ -1,18 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useParams } from 'react-router-dom'
 import { Rail } from './Rail'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { TopBar } from './TopBar'
 import { Footer } from './Footer'
-import { SplitConsole, useConsoleBoot } from '@/components/console/SplitConsole'
 import { sectionTitle, type Role } from '@/lib/roles'
-import { meta, model } from '@/lib/data'
 import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
 import { LAYERS, useLayers, type LayerId } from '@/store/useLayers'
-import { useConsole } from '@/store/useConsole'
-import { nf } from '@/lib/format'
-import { useIsCompact, useIsMobile } from '@/hooks/useMediaQuery'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 import { useFullBleed } from '@/lib/layout'
 import { cn } from '@/lib/utils'
 
@@ -20,25 +16,12 @@ export function AppShell({ role }: { role: Role }) {
   const { section } = useParams()
   const location = useLocation()
   const isMobile = useIsMobile()
-  const isCompact = useIsCompact()
   const [railOpen, setRailOpen] = useState(() => window.innerWidth >= 1100)
   // Below md the rail is a sheet, so the top-bar button opens that instead of collapsing.
   const [railSheet, setRailSheet] = useState(false)
   // The map consoles fill the content area instead of scrolling, so the shell hands them a
   // uniform inset and takes the page scroll away.
   const fullBleed = useFullBleed(role.id, section)
-
-  const boot = useMemo(
-    () => [
-      `Survey data loaded — ${nf(meta.counts.sites)} thermal sites, ${nf(meta.counts.detections)} detections`,
-      `Class filter applied for ${role.short}`,
-      `Site baselines restored — ${nf(meta.counts.series)} historical series`,
-      `Classifier report attached — macro-F1 ${model.macroF1.toFixed(3)} across ${model.classes} classes`,
-      'Map layers updated',
-    ],
-    [role],
-  )
-  useConsoleBoot(role, boot)
 
   // Saved defaults are a live binding: saving a new default window or layer set on the
   // settings page moves the map and the filters at once, rather than waiting for a reload.
@@ -51,12 +34,6 @@ export function AppShell({ role }: { role: Role }) {
     const next = Object.fromEntries(LAYERS.map((l) => [l.id, defaultLayers.includes(l.id)])) as Record<LayerId, boolean>
     setVisible(next)
   }, [defaultWindow, defaultLayers, setWindow, setVisible])
-
-  // On a narrow screen the console would eat most of the viewport, so it starts folded.
-  const setCollapsed = useConsole((s) => s.setCollapsed)
-  useEffect(() => {
-    if (isCompact) setCollapsed(true)
-  }, [isCompact, setCollapsed])
 
   // Navigating on a phone should close the nav, not leave it covering the page.
   useEffect(() => {
@@ -102,7 +79,6 @@ export function AppShell({ role }: { role: Role }) {
         >
           <Outlet />
         </main>
-        <SplitConsole role={role} />
         <Footer />
       </div>
     </div>

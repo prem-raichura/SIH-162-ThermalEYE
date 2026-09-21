@@ -36,7 +36,8 @@ export function NrscRecords({ role }: { role: Role }) {
       tableAction={<ColumnChooser value={columns} onChange={setColumns} />}
       filters={
         <div className="flex flex-wrap items-center gap-2">
-          <FilterBar role={role.id} classes={classes} states={states} />
+          <FilterBar
+        classes={classes} states={states} />
           <label className="border-line text-ink-soft ml-auto inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px]">
             <Search size={13} strokeWidth={1.8} />
             <input

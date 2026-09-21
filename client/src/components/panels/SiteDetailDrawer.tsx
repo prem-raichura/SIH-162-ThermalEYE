@@ -9,13 +9,11 @@ import { SarEvidence } from './SarEvidence'
 import { QualityChip } from './QualityChip'
 import { siteById } from '@/lib/data'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { CLASS_COLOR, tHotColor } from '@/lib/thermal'
 import { coord, days, kelvin, megawatt, nf, shortDate, sqm } from '@/lib/format'
-import type { Role } from '@/lib/roles'
 
 /** The one place a site is explained in full: identity, physics, history, evidence, context. */
-export function SiteDetailDrawer({ role, onGenerateReport }: { role: Role; onGenerateReport?: (siteId: string) => void }) {
+export function SiteDetailDrawer({ onGenerateReport }: { onGenerateReport?: (siteId: string) => void }) {
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
   const detailOpen = useFilters((s) => s.detailOpen)
   const closeDetail = useFilters((s) => s.closeDetail)
@@ -86,7 +84,6 @@ export function SiteDetailDrawer({ role, onGenerateReport }: { role: Role; onGen
               className="mt-3 w-fit rounded-[10px]"
               onClick={() => {
                 onGenerateReport(site.id)
-                logLine(role.id, `Evidence report generated for ${site.name}`)
               }}
             >
               Generate report

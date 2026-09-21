@@ -50,7 +50,6 @@ import type { Alert, Detection, ThermalSite, UnmappedCandidate } from '@/lib/typ
 import type { FeatureCollection } from 'geojson'
 import { useFilters } from '@/store/useFilters'
 import { useLayers, type LayerId } from '@/store/useLayers'
-import { logLine } from '@/store/useConsole'
 import type { Role } from '@/lib/roles'
 import { cn } from '@/lib/utils'
 import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
@@ -168,13 +167,11 @@ export function ThermalMap({
       loadDetections()
         .then(setDetections)
         .catch((e) => {
-          logLine('ERROR', 'Detection layer could not be loaded')
           throw e
         }),
       loadStates()
         .then(setStatesGeo)
         .catch((e) => {
-          logLine('ERROR', 'State boundaries could not be loaded')
           throw e
         }),
     ]).then((results) => {
@@ -194,7 +191,6 @@ export function ThermalMap({
       .then(setDistrictsGeo)
       .catch(() => {
         setDistrictsFailed(true)
-        logLine('ERROR', 'District boundaries could not be loaded')
       })
   }, [visible.districts, districtsGeo, districtsFailed])
 
@@ -279,7 +275,6 @@ export function ThermalMap({
     const props = feature.properties as Record<string, string>
     if (feature.layer.id === 'unmapped-ring') {
       selectUnmapped(props.id)
-      logLine(role.id, `Selected unmapped candidate #${props.rank} — ${props.state}`)
       return
     }
     if (feature.layer.id === 'alerts-cluster') {
@@ -294,11 +289,9 @@ export function ThermalMap({
       const alert = alertRows.find((a) => a.id === String(props.id))
       if (alert && onAlertSelect) onAlertSelect(alert)
       else selectSite(props.siteId)
-      logLine(role.id, `Opened alert ${props.id} — ${props.siteName}`)
       return
     }
     selectSite(props.id)
-    logLine(role.id, `Selected ${props.name} — ${props.classLabel}, ${props.state}`)
   }
 
   const onMove = (e: MapLayerMouseEvent) => {
@@ -390,7 +383,6 @@ export function ThermalMap({
           if (sourceId === 'imagery') {
             setTilesFailed(true)
             setBasemap('offline')
-            logLine('WARN', 'Satellite tiles unavailable — fell back to the offline basemap')
           }
         }}
         onLoad={(e) => {

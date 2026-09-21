@@ -11,7 +11,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { megawatt, nf, shortDate } from '@/lib/format'
 import type { Alert } from '@/lib/types'
@@ -57,7 +56,6 @@ export function CeaCoalYards({ role }: { role: Role }) {
         onAction={() => {
           if (!site) return
           setReportFor(site.id)
-          logLine(role.id, `Evidence report generated for ${site.name}`)
         }}
       />
 
@@ -87,11 +85,9 @@ export function CeaCoalYards({ role }: { role: Role }) {
               fill
               onSelect={(alert) => {
                 selectSite(alert.siteId)
-                logLine(role.id, `Opened ${alert.title} — ${alert.siteName}`)
               }}
               onAcknowledge={(alert) => {
                 setAcknowledged((ids) => [...ids, alert.id])
-                logLine(role.id, `Acknowledged ${alert.id} — ${alert.siteName}`)
               }}
             />
           </Panel>
@@ -130,7 +126,7 @@ export function CeaCoalYards({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

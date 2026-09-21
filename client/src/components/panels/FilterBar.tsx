@@ -3,19 +3,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CLASS_COLOR } from '@/lib/thermal'
 import { CLASS_LABELS } from '@/lib/classes'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
-import type { RoleId } from '@/lib/roles'
 import type { SourceClass } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 /** One row of filters above the content, as the interaction guidance asks for. */
 export function FilterBar({
-  role,
   classes,
   states,
   showBehaviour = true,
 }: {
-  role: RoleId
   classes: SourceClass[]
   states: string[]
   showBehaviour?: boolean
@@ -42,7 +38,6 @@ export function FilterBar({
               type="button"
               onClick={() => {
                 toggleClass(cls)
-                logLine(role, `${on ? 'Cleared' : 'Applied'} class filter ${CLASS_LABELS[cls]}`)
               }}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] transition-colors',
@@ -64,7 +59,6 @@ export function FilterBar({
         value={state ?? 'all'}
         onValueChange={(value) => {
           setState(value === 'all' ? null : value)
-          logLine(role, `State filter set to ${value === 'all' ? 'all states' : value}`)
         }}
       >
         <SelectTrigger className="h-8 w-[168px] rounded-full text-[12px]">
@@ -85,7 +79,6 @@ export function FilterBar({
           value={behaviour}
           onValueChange={(value) => {
             setBehaviour(value as 'all' | 'normal' | 'abnormal')
-            logLine(role, `Behaviour filter set to ${value}`)
           }}
         >
           <SelectTrigger className="h-8 w-[150px] rounded-full text-[12px]">
@@ -106,7 +99,6 @@ export function FilterBar({
             setClasses(null)
             setState(null)
             setBehaviour('all')
-            logLine(role, 'Filters cleared')
           }}
           className="text-ink-soft hover:text-ink inline-flex items-center gap-1 text-[12px]"
         >

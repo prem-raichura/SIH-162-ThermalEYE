@@ -8,7 +8,6 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useFsiSites } from './useFsiData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -46,7 +45,6 @@ export function FsiVegetation({ role }: { role: Role }) {
               selectedId={site?.id ?? null}
               onRowClick={(s) => {
                 selectSite(s.id)
-                logLine(role.id, `Vegetation analysis opened for ${s.name}`)
               }}
             />
           </Panel>
@@ -86,7 +84,7 @@ export function FsiVegetation({ role }: { role: Role }) {
         </div>
       </Panel>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

@@ -9,7 +9,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { model, siteById } from '@/lib/data'
 import { days, megawatt, nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -55,7 +54,6 @@ export function CeaBaselines({ role }: { role: Role }) {
         onAction={() => {
           if (!site) return
           setReportFor(site.id)
-          logLine(role.id, `Evidence report generated for ${site.name}`)
         }}
       />
 
@@ -69,7 +67,6 @@ export function CeaBaselines({ role }: { role: Role }) {
               selectedId={site?.id ?? null}
               onRowClick={(s) => {
                 selectSite(s.id)
-                logLine(role.id, `Baseline opened for ${s.name}`)
               }}
             />
           </Panel>
@@ -131,7 +128,7 @@ export function CeaBaselines({ role }: { role: Role }) {
         <p className="text-ink-soft text-[12.5px]">{model.controls.note}</p>
       </Panel>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

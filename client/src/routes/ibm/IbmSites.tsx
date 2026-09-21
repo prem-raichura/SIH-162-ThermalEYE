@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SUBTYPE_NOTE, fireSubtype, useIbmSites } from './useIbmData'
 import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { days, nf, shortDate } from '@/lib/format'
 import { tHotColor } from '@/lib/thermal'
@@ -57,7 +56,6 @@ export function IbmSites({ role }: { role: Role }) {
             value={state ?? 'all'}
             onValueChange={(value) => {
               setState(value === 'all' ? null : value)
-              logLine(role.id, `State filter set to ${value === 'all' ? 'all states' : value}`)
             }}
           >
             <SelectTrigger className="h-8 w-[180px] rounded-full text-[12px]">
@@ -101,7 +99,6 @@ export function IbmSites({ role }: { role: Role }) {
                         key={site.id}
                         onClick={() => {
                           selectSite(site.id)
-                          logLine(role.id, `Selected ${site.name} — ${subtype}`)
                         }}
                         className={cn('hover:bg-paper-deep cursor-pointer', selectedSiteId === site.id && 'bg-paper-deep')}
                       >
@@ -155,7 +152,7 @@ export function IbmSites({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

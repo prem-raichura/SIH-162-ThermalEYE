@@ -60,7 +60,7 @@ demo is the same on every machine and in every run.
 
 > **🔌 Offline-first.** Satellite imagery is the one thing that needs a connection. Fonts,
 > boundaries and every data file are served from this origin. Pull the network and the tiles
-> fail, the map falls back to the offline GADM basemap **and says so** — in the operator console
+> fail, the map falls back to the offline GADM basemap **and says so** — on the map itself
 > and on a chip beside the toggle. Every layer, chart, table and export keeps working.
 
 ---
@@ -259,13 +259,7 @@ Consoles open on the **most recent acquisition day**, not a year of history.
 > **On the hour windows:** FIRMS ships an acquisition **date** and a day/night flag — never a
 > clock time. The hour is therefore **derived, not measured**: deterministic per record so it
 > never jumps between renders, and always on the correct side of dusk so it cannot contradict the
-> real `daynight` flag. The app says so itself, in Settings → About this build.
-
-### 🖥️ The operator console
-
-A bottom-docked log where **every interaction writes a line** — selections, filter changes, layer
-toggles, dispositions, report generation, and every data failure. Draggable, collapsible,
-filterable by tag, exportable to `.log`. It is what makes a static dataset read as a live system.
+> real `daynight` flag. The app says so itself, in Settings → Account.
 
 ### ⌨️ Command palette — `⌘K`
 
@@ -274,8 +268,7 @@ Jump to any site, any coordinate, or any section across every role.
 ### 🌓 Theme
 
 Full light/dark with a token-driven palette. Every accent, ramp, chart colour and map boundary
-stroke is defined in both. The console keeps its own dark palette and its own focus-ring colour,
-so rings stay visible against near-black.
+stroke is defined in both.
 
 ### ⏳ Loading — and failing — honestly
 
@@ -356,9 +349,9 @@ The system does **not** claim that:
 
 ## ♿ Accessibility
 
-- Visible focus rings on **every** control, in both themes and on the dark console
+- Visible focus rings on **every** control, in both themes
 - A skip link to the main region
-- `prefers-reduced-motion` removes map easing, plays the console boot instantly, and drops the
+- `prefers-reduced-motion` removes map easing and drops the
   route-transition hold to zero
 - Charts that carry a claim are labelled and ship the numbers behind them **in a real table**
 - Every loader is a `role="status"` live region carrying **real text**, because a frozen spinner
@@ -379,13 +372,12 @@ client/
 │   ├── components/
 │   │   ├── shell/     AppShell, Rail, TopBar, CommandPalette, Brand, loaders
 │   │   ├── map/       ThermalMap, MapConsole, MapDock, layer/legend/window chrome
-│   │   ├── console/   the operator log
 │   │   ├── panels/    24 reusable panels — tables, charts, evidence, cards
 │   │   └── ui/        17 shadcn primitives
 │   ├── data/          bundled JSON — sites, alerts, coverage, model, validation, sources
 │   ├── lib/           data access, types, plasma ramp, chart tokens, export schema
 │   ├── routes/        one folder per role, each with a use<Role>Data hook
-│   └── store/         zustand — filters, layers, console, settings, per-role state
+│   └── store/         zustand — filters, layers, settings, per-role state
 ├── public/
 │   ├── data/          fetched on demand — detections, timeseries, SHAP, spectral, SAR
 │   ├── geo/           GADM states and districts

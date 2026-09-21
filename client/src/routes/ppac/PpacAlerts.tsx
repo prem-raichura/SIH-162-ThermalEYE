@@ -10,7 +10,6 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { usePpacSites } from './usePpacData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { alerts as allAlerts, siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Alert } from '@/lib/types'
@@ -84,11 +83,9 @@ export function PpacAlerts({ role }: { role: Role }) {
               selectedId={null}
               onSelect={(alert) => {
                 selectSite(alert.siteId)
-                logLine(role.id, `Opened alert ${alert.id} — ${alert.siteName}`)
               }}
               onAcknowledge={(alert) => {
                 setAcknowledged((ids) => [...ids, alert.id])
-                logLine(role.id, `Acknowledged ${alert.id} — ${alert.siteName}`)
               }}
             />
           </Panel>
@@ -106,7 +103,7 @@ export function PpacAlerts({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

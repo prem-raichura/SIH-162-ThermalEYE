@@ -8,7 +8,6 @@ import { SiteTable } from '@/components/panels/SiteTable'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { loadDetections, validation } from '@/lib/data'
 import type { Detection } from '@/lib/types'
 import { useAsyncData } from '@/hooks/useAsyncData'
@@ -153,12 +152,11 @@ export function CeaHistorical({ role }: { role: Role }) {
           selectedId={selectedSiteId}
           onRowClick={(s) => {
             selectSite(s.id)
-            logLine(role.id, `Selected ${s.name} — recurrence ${s.recurrenceRate.toFixed(3)}`)
           }}
         />
       </Panel>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

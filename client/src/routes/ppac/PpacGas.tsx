@@ -5,7 +5,6 @@ import { ThermalMap } from '@/components/map/ThermalMap'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { usePpacSites } from './usePpacData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { sites as allSites } from '@/lib/data'
 import { coord, nf } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -70,7 +69,6 @@ export function PpacGas({ role }: { role: Role }) {
                       key={r.id}
                       onClick={() => {
                         selectSite(r.id)
-                        logLine(role.id, `Selected ${r.name} — ${r.state}`)
                       }}
                       className={cn('hover:bg-paper-deep cursor-pointer', selectedSiteId === r.id && 'bg-paper-deep')}
                     >
@@ -132,7 +130,7 @@ export function PpacGas({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

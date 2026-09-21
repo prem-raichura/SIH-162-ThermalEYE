@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { alertSites, useNdmaFeed } from './useNdmaData'
 import { ALERT_WINDOWS, useNdma } from '@/store/useNdma'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { SEVERITY_LABEL, SEVERITY_ORDER } from '@/lib/severity'
 import { SEVERITY_COLOR } from '@/lib/thermal'
 import { nf } from '@/lib/format'
@@ -51,7 +50,6 @@ export function NdmaIncidents({ role }: { role: Role }) {
             type="button"
             onClick={() => {
               setWindow(w.hours)
-              logLine(role.id, `Incident window set to ${w.label}`)
             }}
             className={cn(
               'border-line rounded-full border px-2.5 py-1 text-[11.5px]',
@@ -91,7 +89,6 @@ export function NdmaIncidents({ role }: { role: Role }) {
           onAlertSelect={(alert) => {
             selectAlert(alert.id)
             selectSite(alert.siteId)
-            logLine(role.id, `Flew to incident ${alert.id} — ${alert.siteName}`)
           }}
         />
 
@@ -112,7 +109,6 @@ export function NdmaIncidents({ role }: { role: Role }) {
                     onClick={() => {
                       selectSite(feed.selected?.siteId ?? null)
                       openDetail()
-                      logLine(role.id, `Full record opened for ${feed.selected?.siteName}`)
                     }}
                   >
                     Full record
@@ -122,7 +118,6 @@ export function NdmaIncidents({ role }: { role: Role }) {
                     className="gap-1.5 rounded-[9px]"
                     onClick={() => {
                       setReportFor(feed.selected?.siteId ?? null)
-                      logLine(role.id, `Evidence report generated for ${feed.selected?.siteName}`)
                     }}
                   >
                     <FileText size={14} strokeWidth={1.8} />
@@ -135,7 +130,7 @@ export function NdmaIncidents({ role }: { role: Role }) {
         </Panel>
       </div>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

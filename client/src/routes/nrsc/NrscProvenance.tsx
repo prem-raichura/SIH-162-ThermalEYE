@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNrscData } from './useNrscData'
 import { useNrsc, type Availability } from '@/store/useNrsc'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { nf, pctRaw } from '@/lib/format'
 import type { DataQuality, MatchConfidence, RegisterSource } from '@/lib/types'
 import type { Role } from '@/lib/roles'
@@ -109,7 +108,6 @@ export function NrscProvenance({ role }: { role: Role }) {
             className="gap-1.5 rounded-[9px]"
             onClick={() => {
               resetProvenance()
-              logLine(role.id, 'Provenance filters cleared')
             }}
           >
             <RotateCcw size={13} strokeWidth={1.8} />
@@ -123,7 +121,6 @@ export function NrscProvenance({ role }: { role: Role }) {
               value={provenance.register}
               onValueChange={(value) => {
                 setProvenance('register', value as RegisterSource | 'all')
-                logLine(role.id, `Register filter set to ${value}`)
               }}
             >
               <SelectTrigger className="h-8 w-[170px] text-[12.5px]">
@@ -144,7 +141,6 @@ export function NrscProvenance({ role }: { role: Role }) {
               value={provenance.match}
               onValueChange={(value) => {
                 setProvenance('match', value as MatchConfidence | 'all')
-                logLine(role.id, `Match-confidence filter set to ${value}`)
               }}
             >
               <SelectTrigger className="h-8 w-[140px] text-[12.5px]">
@@ -165,7 +161,6 @@ export function NrscProvenance({ role }: { role: Role }) {
               value={provenance.dataQuality}
               onValueChange={(value) => {
                 setProvenance('dataQuality', value as DataQuality | 'all')
-                logLine(role.id, `FIRMS quality filter set to ${value}`)
               }}
             >
               <SelectTrigger className="h-8 w-[168px] text-[12.5px]">
@@ -186,7 +181,6 @@ export function NrscProvenance({ role }: { role: Role }) {
               value={provenance.sentinel1}
               onValueChange={(value) => {
                 setProvenance('sentinel1', value as Availability)
-                logLine(role.id, `Sentinel-1 availability filter set to ${value}`)
               }}
             >
               <SelectTrigger className="h-8 w-[130px] text-[12.5px]">
@@ -207,7 +201,6 @@ export function NrscProvenance({ role }: { role: Role }) {
               value={provenance.sentinel2}
               onValueChange={(value) => {
                 setProvenance('sentinel2', value as Availability)
-                logLine(role.id, `Sentinel-2 availability filter set to ${value}`)
               }}
             >
               <SelectTrigger className="h-8 w-[130px] text-[12.5px]">
@@ -230,7 +223,6 @@ export function NrscProvenance({ role }: { role: Role }) {
             step={0.05}
             display={provenance.minSarQuality.toFixed(2)}
             onChange={(v) => setProvenance('minSarQuality', v)}
-            onCommit={() => logLine(role.id, `SAR quality floor set to ${provenance.minSarQuality.toFixed(2)}`)}
           />
           <Slider
             label="Min optical quality"
@@ -239,7 +231,6 @@ export function NrscProvenance({ role }: { role: Role }) {
             step={0.05}
             display={provenance.minOpticalQuality.toFixed(2)}
             onChange={(v) => setProvenance('minOpticalQuality', v)}
-            onCommit={() => logLine(role.id, `Optical quality floor set to ${provenance.minOpticalQuality.toFixed(2)}`)}
           />
           <Slider
             label="Max cloud fraction"
@@ -248,7 +239,6 @@ export function NrscProvenance({ role }: { role: Role }) {
             step={0.05}
             display={provenance.maxCloudFraction.toFixed(2)}
             onChange={(v) => setProvenance('maxCloudFraction', v)}
-            onCommit={() => logLine(role.id, `Cloud ceiling set to ${provenance.maxCloudFraction.toFixed(2)}`)}
           />
           <Slider
             label="Max temporal gap"
@@ -257,7 +247,6 @@ export function NrscProvenance({ role }: { role: Role }) {
             step={5}
             display={`${provenance.maxTemporalGap} d`}
             onChange={(v) => setProvenance('maxTemporalGap', v)}
-            onCommit={() => logLine(role.id, `Temporal-gap ceiling set to ${provenance.maxTemporalGap} d`)}
           />
         </div>
 
@@ -275,12 +264,11 @@ export function NrscProvenance({ role }: { role: Role }) {
           onRowClick={(site) => {
             selectSite(site.id)
             openDetail()
-            logLine(role.id, `Opened the full record for ${site.name}`)
           }}
         />
       </Panel>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }
@@ -301,7 +289,6 @@ function Slider({
   step,
   display,
   onChange,
-  onCommit,
 }: {
   label: string
   value: number
@@ -309,7 +296,6 @@ function Slider({
   step: number
   display: string
   onChange: (value: number) => void
-  onCommit: () => void
 }) {
   return (
     <label className="flex flex-col gap-1">
@@ -323,7 +309,6 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        onMouseUp={onCommit}
         className="accent-teal-deep h-8 w-[140px]"
       />
     </label>

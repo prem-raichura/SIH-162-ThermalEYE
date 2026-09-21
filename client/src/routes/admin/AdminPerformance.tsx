@@ -5,7 +5,6 @@ import { Panel } from '@/components/panels/Panel'
 import { StatTile } from '@/components/panels/StatTile'
 import { ConfusionMatrix } from '@/components/panels/ConfusionMatrix'
 import { model } from '@/lib/data'
-import { logLine } from '@/store/useConsole'
 import { STATUS } from '@/lib/chart'
 import { nf, pct } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -58,9 +57,6 @@ export function AdminPerformance({ role }: { role: Role }) {
         <ConfusionMatrix
           matrix={model.confusionMatrix}
           labels={model.classLabels}
-          onSelect={(trueLabel, predictedLabel, count) =>
-            logLine(role.id, `${trueLabel} predicted as ${predictedLabel} — ${nf(count)} sites`)
-          }
         />
       </Panel>
 

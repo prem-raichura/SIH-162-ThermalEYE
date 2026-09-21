@@ -10,7 +10,6 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Alert } from '@/lib/types'
@@ -79,11 +78,9 @@ export function CeaAlerts({ role }: { role: Role }) {
               fill
               onSelect={(alert) => {
                 selectSite(alert.siteId)
-                logLine(role.id, `Opened alert ${alert.id} — ${alert.siteName}`)
               }}
               onAcknowledge={(alert) => {
                 setAcknowledged((ids) => [...ids, alert.id])
-                logLine(role.id, `Acknowledged ${alert.id} — ${alert.siteName}`)
               }}
             />
           </Panel>
@@ -107,7 +104,7 @@ export function CeaAlerts({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

@@ -13,7 +13,6 @@ import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useNavigate } from 'react-router-dom'
 import { useNrscData } from './useNrscData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -44,7 +43,6 @@ export function NrscLayer({ role }: { role: Role }) {
 
   const generateReport = () => {
     setReportFor(selectedSiteId ?? filtered[0]?.id ?? null)
-    logLine(role.id, 'Evidence report generated from the site layer')
   }
 
   const searchBox = (
@@ -61,7 +59,8 @@ export function NrscLayer({ role }: { role: Role }) {
 
   const filters = (
     <div className="flex flex-col gap-2.5">
-      <FilterBar role={role.id} classes={classes} states={states} />
+      <FilterBar
+        classes={classes} states={states} />
       {searchBox}
     </div>
   )
@@ -116,7 +115,8 @@ export function NrscLayer({ role }: { role: Role }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <FilterBar role={role.id} classes={classes} states={states} />
+              <FilterBar
+        classes={classes} states={states} />
               <div className="ml-auto">{searchBox}</div>
             </div>
 
@@ -134,7 +134,7 @@ export function NrscLayer({ role }: { role: Role }) {
         }
       />
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </>
   )

@@ -9,7 +9,6 @@ import {
   type SuppressionReason,
 } from '@/lib/severity'
 import { useNdma, type Disposition } from '@/store/useNdma'
-import { logLine } from '@/store/useConsole'
 import type { Alert, Severity, SourceClass, ThermalSite } from '@/lib/types'
 import type { RoleId } from '@/lib/roles'
 
@@ -125,17 +124,9 @@ export function useFirmsPass(roleId: RoleId, queue: FeedAlert[]) {
     const id = window.setInterval(() => {
       const next = queueRef.current[0]
       if (!next) {
-        logLine(roleId, 'New FIRMS pass ingested — no new detections over the monitored sites')
         return
       }
-      // Deterministic, so a demo run reads the same way twice.
-      const updated = 1 + (Number.parseInt(next.id.slice(1), 10) % 4)
       ingest(next.id)
-      logLine(roleId, `New FIRMS pass ingested — ${updated} detections updated`)
-      logLine(
-        roleId,
-        `${next.severity} severity — ${next.siteName}, ${next.currentFrp} MW against a normal ${next.normalLow}–${next.normalHigh} MW`,
-      )
     }, PASS_INTERVAL_MS)
     return () => window.clearInterval(id)
   }, [roleId, ingest])

@@ -6,13 +6,12 @@ import { AccountSection, DataSection, DisplaySection } from '@/components/settin
 import { SettingsSection } from '@/components/settings/controls'
 import { Button } from '@/components/ui/button'
 import { useRoleSettings } from '@/store/useRoleSettings'
-import { logLine } from '@/store/useConsole'
 import { ROLE_LIST } from '@/lib/roles'
 import { model } from '@/lib/data'
 import type { Role } from '@/lib/roles'
 
 /** Every key this build writes. The danger zone clears the lot, session included. */
-const STORAGE_KEYS = ['te.settings', 'te.ndma', 'te.nrsc', 'te.theme', 'te.console.collapsed', 'te.console.height']
+const STORAGE_KEYS = ['te.settings', 'te.ndma', 'te.nrsc', 'te.theme']
 
 export function AdminSettings({ role }: { role: Role }) {
   const resetAll = useRoleSettings((s) => s.resetAll)
@@ -50,7 +49,6 @@ export function AdminSettings({ role }: { role: Role }) {
               className="shrink-0 gap-1.5 rounded-[9px]"
               onClick={() => {
                 resetAll()
-                logLine(role.id, 'Every role reset to the shipped default settings')
               }}
             >
               <TriangleAlert size={13} strokeWidth={1.8} />

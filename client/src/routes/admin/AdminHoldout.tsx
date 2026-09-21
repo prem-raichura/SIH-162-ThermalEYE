@@ -60,7 +60,7 @@ export function AdminHoldout({ role }: { role: Role }) {
       </div>
 
       <div className="grid gap-3 xl:grid-cols-[1.4fr_1fr]">
-        <HoldoutMap role={role.id} />
+        <HoldoutMap />
 
         <Panel title="Regions" subtitle="Counted from the evaluated sites, per zone">
           <div className="panel-scroll overflow-auto overscroll-contain">

@@ -29,7 +29,6 @@ export interface CommonSettings {
   density: Density
   tableRows: number
   exportFormat: ExportFormat
-  consoleAutoScroll: boolean
   alertMinSeverity: SeverityFloor
 }
 
@@ -89,7 +88,6 @@ const COMMON: CommonSettings = {
   density: 'comfortable',
   tableRows: 25,
   exportFormat: 'csv',
-  consoleAutoScroll: true,
   alertMinSeverity: 'all',
 }
 

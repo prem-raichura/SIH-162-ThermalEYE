@@ -10,7 +10,6 @@ import { Check, RotateCcw, Undo2 } from 'lucide-react'
 import { PageHeader, type MetaItem } from '@/components/shell/PageHeader'
 import { Button } from '@/components/ui/button'
 import { useRoleSettings, useDirtyCount } from '@/store/useRoleSettings'
-import { logLine } from '@/store/useConsole'
 import type { Role } from '@/lib/roles'
 
 export function SettingsPage({
@@ -51,7 +50,6 @@ export function SettingsPage({
               className="h-7 gap-1.5 rounded-full px-2.5 text-[12px]"
               onClick={() => {
                 resetDraft(role.id)
-                logLine(role.id, 'Settings draft returned to the shipped defaults')
               }}
             >
               <RotateCcw size={13} strokeWidth={1.8} />
@@ -63,7 +61,6 @@ export function SettingsPage({
               className="h-7 gap-1.5 rounded-full px-3 text-[12px]"
               onClick={() => {
                 discard(role.id)
-                logLine(role.id, 'Settings changes discarded')
               }}
             >
               <Undo2 size={13} strokeWidth={1.8} />
@@ -74,10 +71,6 @@ export function SettingsPage({
               className="h-7 gap-1.5 rounded-full px-3 text-[12px]"
               onClick={() => {
                 save(role.id)
-                logLine(
-                  role.id,
-                  `Settings saved — ${dirty} ${dirty === 1 ? 'value' : 'values'} applied to the ${role.short} view`,
-                )
               }}
             >
               <Check size={13} strokeWidth={2} />

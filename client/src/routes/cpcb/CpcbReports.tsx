@@ -9,7 +9,6 @@ import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { useCpcbSites } from './useCpcbData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { istDate, nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -52,7 +51,6 @@ export function CpcbReports({ role }: { role: Role }) {
             selectedId={selectedSiteId}
             onRowClick={(s) => {
               selectSite(s.id)
-              logLine(role.id, `Loaded evidence for ${s.name}`)
             }}
           />
         </Panel>
@@ -68,7 +66,6 @@ export function CpcbReports({ role }: { role: Role }) {
                 onClick={() => {
                   setReportFor(site.id)
                   setGenerated((rows) => [{ id: site.id, name: site.name, at: istDate() }, ...rows].slice(0, 8))
-                  logLine(role.id, `Evidence report generated for ${site.name}`)
                 }}
               >
                 <FileText size={14} strokeWidth={1.8} />

@@ -11,7 +11,6 @@ import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { flareSignature, usePpacSites } from './usePpacData'
 import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -46,7 +45,6 @@ export function PpacReports({ role }: { role: Role }) {
               selectedId={selectedSiteId}
               onRowClick={(s) => {
                 selectSite(s.id)
-                logLine(role.id, `Loaded evidence for ${s.name}`)
               }}
             />
           </Panel>
@@ -64,7 +62,6 @@ export function PpacReports({ role }: { role: Role }) {
                     className="gap-1.5 rounded-[9px]"
                     onClick={() => {
                       setReportFor(site.id)
-                      logLine(role.id, `Evidence report generated for ${site.name}`)
                     }}
                   >
                     <FileText size={14} strokeWidth={1.8} />

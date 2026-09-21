@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { logLine } from '@/store/useConsole'
 
 export interface AsyncData<T> {
   data: T | null
@@ -43,7 +42,6 @@ export function useAsyncData<T>(
         if (!live) return
         setError(`${subject} could not be loaded.`)
         setPending(false)
-        logLine('ERROR', `${subject} could not be loaded`)
       })
 
     return () => {

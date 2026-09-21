@@ -11,7 +11,6 @@ import {
 import { sites, unmapped } from '@/lib/data'
 import { rolePath, type Role } from '@/lib/roles'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { coord } from '@/lib/format'
 
 /** ⌘K search over sites, unmapped candidates and this role's own sections. */
@@ -61,7 +60,6 @@ export function CommandPalette({ role, open, onOpenChange }: { role: Role; open:
                 value={`${s.name} ${s.state} ${s.classLabel}`}
                 onSelect={() => {
                   selectSite(s.id)
-                  logLine(role.id, `Selected ${s.name} — ${s.classLabel}, ${s.state}`)
                   close()
                 }}
               >
@@ -81,7 +79,6 @@ export function CommandPalette({ role, open, onOpenChange }: { role: Role; open:
                 value={`${u.label} ${u.state}`}
                 onSelect={() => {
                   selectUnmapped(u.id)
-                  logLine(role.id, `Selected unmapped candidate ${u.id} — ${u.state}`)
                   close()
                 }}
               >

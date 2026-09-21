@@ -12,7 +12,6 @@ import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useCpcbSites, useUnmappedQueue } from './useCpcbData'
 import { useFilters } from '@/store/useFilters'
 import { siteById } from '@/lib/data'
-import { logLine } from '@/store/useConsole'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
 import type { Role } from '@/lib/roles'
@@ -47,7 +46,6 @@ export function CpcbOverview({ role }: { role: Role }) {
 
   const generateReport = () => {
     setReportFor(selectedSiteId ?? filtered[0]?.id ?? null)
-    logLine(role.id, 'Evidence report generated from the overview')
   }
 
 
@@ -70,7 +68,6 @@ export function CpcbOverview({ role }: { role: Role }) {
       showAssessment={false}
       onSelect={(row) => {
         selectUnmapped(row.id)
-        logLine(role.id, `Selected unmapped candidate #${row.rank} — ${row.state}`)
       }}
     />
   )
@@ -138,7 +135,7 @@ export function CpcbOverview({ role }: { role: Role }) {
         }
       />
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </>
   )

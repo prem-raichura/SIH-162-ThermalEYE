@@ -10,7 +10,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { PPAC_CLASSES, flareSignature, usePpacSites } from './usePpacData'
 import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { kelvin, nf, sqm } from '@/lib/format'
 import { tHotColor } from '@/lib/thermal'
@@ -48,7 +47,7 @@ export function PpacFlares({ role }: { role: Role }) {
       />
 
       <Panel bodyClassName="py-2.5">
-        <FilterBar role="ppac" classes={PPAC_CLASSES} states={states} />
+        <FilterBar classes={PPAC_CLASSES} states={states} />
       </Panel>
 
       <div className="grid gap-3 xl:grid-cols-[1.45fr_1fr]">
@@ -76,7 +75,6 @@ export function PpacFlares({ role }: { role: Role }) {
                       key={site.id}
                       onClick={() => {
                         selectSite(site.id)
-                        logLine(role.id, `Inspecting ${site.name} — night profile`)
                       }}
                       className={cn(
                         'hover:bg-paper-deep cursor-pointer',
@@ -135,7 +133,7 @@ export function PpacFlares({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

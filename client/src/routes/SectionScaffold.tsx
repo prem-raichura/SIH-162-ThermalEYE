@@ -19,7 +19,6 @@ import { alerts as allAlerts, sites as allSites, siteById, unmapped } from '@/li
 import { CLASS_COLOR } from '@/lib/thermal'
 import { istClock, istDate, nf } from '@/lib/format'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 
 /**
  * Shared composition used until each role plan (07-14) replaces it with its own dashboard.
@@ -102,7 +101,6 @@ export function SectionScaffold({
         onAction={() => {
           const target = selectedSiteId ?? sites[0]?.id ?? null
           setReportFor(target)
-          logLine(role.id, `Evidence report opened for ${sites.find((s) => s.id === target)?.name ?? 'site'}`)
         }}
       />
 
@@ -142,7 +140,6 @@ export function SectionScaffold({
             selectedId={selectedSiteId}
             onRowClick={(site) => {
               selectSite(site.id)
-              logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
             }}
           />
         </Panel>
@@ -167,7 +164,6 @@ export function SectionScaffold({
               limit={4}
               onSelect={(alert) => {
                 selectSite(alert.siteId)
-                logLine(role.id, `Opened alert ${alert.id} — ${alert.siteName}`)
               }}
             />
           </Panel>
@@ -183,7 +179,6 @@ export function SectionScaffold({
             maxHeight={300}
             onSelect={(row) => {
               selectUnmapped(row.id)
-              logLine(role.id, `Selected unmapped candidate #${row.rank} — ${row.state}`)
             }}
           />
         </div>
@@ -193,7 +188,7 @@ export function SectionScaffold({
         <CoverageAudit />
       </Panel>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

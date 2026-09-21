@@ -11,7 +11,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { usePpacSites } from './usePpacData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { alerts as allAlerts, siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
@@ -40,7 +39,6 @@ export function PpacOverview({ role }: { role: Role }) {
 
   const generateReport = () => {
     setReportFor(selectedSiteId ?? filtered[0]?.id ?? null)
-    logLine(role.id, 'Evidence report generated from the overview')
   }
 
   const selectedCard = selected ? (
@@ -53,13 +51,12 @@ export function PpacOverview({ role }: { role: Role }) {
     />
   )
 
-  const onAlert = (alertId: string, siteId: string, siteName: string) => {
+  const onAlert = (_alertId: string, siteId: string) => {
     selectSite(siteId)
-    logLine(role.id, `Opened alert ${alertId} — ${siteName}`)
   }
 
   const stream = (
-    <AlertStream alerts={roleAlerts} fill onSelect={(a) => onAlert(a.id, a.siteId, a.siteName)} />
+    <AlertStream alerts={roleAlerts} fill onSelect={(a) => onAlert(a.id, a.siteId)} />
   )
 
 
@@ -109,7 +106,7 @@ export function PpacOverview({ role }: { role: Role }) {
         }
       />
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </>
   )

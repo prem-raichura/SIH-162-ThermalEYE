@@ -9,7 +9,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useFsiSites } from './useFsiData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { landcover, siteById } from '@/lib/data'
 import { kelvin, nf, shortDate } from '@/lib/format'
 import { tHotColor } from '@/lib/thermal'
@@ -73,7 +72,6 @@ export function FsiEvents({
           value={state ?? 'all'}
           onValueChange={(value) => {
             setState(value === 'all' ? null : value)
-            logLine(role.id, `State filter set to ${value === 'all' ? 'all states' : value}`)
           }}
         >
           <SelectTrigger className="h-8 w-[180px] rounded-full text-[12px]">
@@ -112,7 +110,6 @@ export function FsiEvents({
                       key={site.id}
                       onClick={() => {
                         selectSite(site.id)
-                        logLine(role.id, `Selected ${site.name} — ${site.state}`)
                       }}
                       className={cn('hover:bg-paper-deep cursor-pointer', selected?.id === site.id && 'bg-paper-deep')}
                     >
@@ -162,7 +159,7 @@ export function FsiEvents({
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

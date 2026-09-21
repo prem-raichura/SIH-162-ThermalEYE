@@ -13,7 +13,6 @@ import { LAYERS, type LayerId } from '@/store/useLayers'
 import { useRoleStore } from '@/store/useRole'
 import { useRoleSettings, useDraftFor } from '@/store/useRoleSettings'
 import { useTheme } from '@/store/useTheme'
-import { logLine } from '@/store/useConsole'
 import { DEFAULT_ROLE_SETTINGS, type FieldMeta } from '@/lib/roleSettings'
 import { HISTORY, RECENT } from '@/lib/timeWindows'
 import type { Role } from '@/lib/roles'
@@ -35,7 +34,6 @@ function useResetCommon(role: Role) {
   return (keys: string[]) => {
     const defaults = DEFAULT_ROLE_SETTINGS[role.id] as unknown as Record<string, unknown>
     patch(role.id, Object.fromEntries(keys.map((k) => [k, defaults[k]])) as never)
-    logLine(role.id, 'Section returned to the shipped defaults — not saved yet')
   }
 }
 
@@ -125,7 +123,7 @@ export function DataSection({ role }: { role: Role }) {
     <SettingsSection
       title="Data and export"
       subtitle="How much is listed, and what leaves in a download"
-      onReset={() => reset(['tableRows', 'exportFormat', 'consoleAutoScroll'])}
+      onReset={() => reset(['tableRows', 'exportFormat'])}
     >
       <NumberField
         meta={TABLE_ROWS}
@@ -143,17 +141,6 @@ export function DataSection({ role }: { role: Role }) {
         value={draft.exportFormat}
         onChange={(exportFormat) => patch(role.id, { exportFormat })}
       />
-
-      <SettingRow
-        label="Console auto-scroll"
-        hint="Whether the log follows new lines or holds where you left it."
-      >
-        <Switch
-          checked={draft.consoleAutoScroll}
-          onCheckedChange={(consoleAutoScroll) => patch(role.id, { consoleAutoScroll })}
-          aria-label="Console auto-scroll"
-        />
-      </SettingRow>
     </SettingsSection>
   )
 }
@@ -223,7 +210,6 @@ export function AccountSection({ role, children }: { role: Role; children?: Reac
           onClick={() => {
             signOut()
             navigate('/login')
-            logLine('INFO', 'Session ended')
           }}
         >
           <LogOut size={13} strokeWidth={1.8} />

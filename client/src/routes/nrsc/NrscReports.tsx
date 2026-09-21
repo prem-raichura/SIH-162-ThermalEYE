@@ -11,7 +11,6 @@ import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { useNrscData } from './useNrscData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { REGISTER_LABEL } from '@/lib/classes'
 import { coord, nf, shortDate } from '@/lib/format'
@@ -38,7 +37,6 @@ export function NrscReports({ role }: { role: Role }) {
         action="Generate report"
         onAction={() => {
           setReportFor(site?.id ?? null)
-          logLine(role.id, `Evidence report generated for ${site?.name ?? 'the selected record'}`)
         }}
       />
 
@@ -52,7 +50,6 @@ export function NrscReports({ role }: { role: Role }) {
               selectedId={selectedSiteId}
               onRowClick={(s) => {
                 selectSite(s.id)
-                logLine(role.id, `Loaded the record sheet for ${s.name}`)
               }}
             />
           </Panel>
@@ -70,7 +67,6 @@ export function NrscReports({ role }: { role: Role }) {
                     className="gap-1.5 rounded-[9px]"
                     onClick={() => {
                       setReportFor(site.id)
-                      logLine(role.id, `Evidence report generated for ${site.name}`)
                     }}
                   >
                     <FileText size={14} strokeWidth={1.8} />
@@ -104,7 +100,6 @@ export function NrscReports({ role }: { role: Role }) {
                   onClick={() => {
                     selectSite(site.id)
                     openDetail()
-                    logLine(role.id, `Full record opened for ${site.name}`)
                   }}
                   className="text-ink-soft hover:text-ink mt-3 self-start text-[12px] underline-offset-4 hover:underline"
                 >
@@ -127,7 +122,7 @@ export function NrscReports({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

@@ -11,7 +11,6 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useIbmSites } from './useIbmData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -45,7 +44,6 @@ export function IbmReports({ role }: { role: Role }) {
               selectedId={selectedSiteId}
               onRowClick={(s) => {
                 selectSite(s.id)
-                logLine(role.id, `Loaded evidence for ${s.name}`)
               }}
             />
           </Panel>
@@ -63,7 +61,6 @@ export function IbmReports({ role }: { role: Role }) {
                     className="gap-1.5 rounded-[9px]"
                     onClick={() => {
                       setReportFor(site.id)
-                      logLine(role.id, `Evidence report generated for ${site.name}`)
                     }}
                   >
                     <FileText size={14} strokeWidth={1.8} />

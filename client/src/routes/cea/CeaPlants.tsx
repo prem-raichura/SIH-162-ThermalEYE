@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DistributionDonut } from '@/components/panels/DistributionDonut'
 import { useCeaSites } from './useCeaData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -51,7 +50,6 @@ export function CeaPlants({ role }: { role: Role }) {
             type="button"
             onClick={() => {
               setFuel(null)
-              logLine(role.id, 'Fuel filter cleared')
             }}
             className={cn(
               'border-line rounded-full border px-2.5 py-1 text-[12px] transition-colors',
@@ -66,7 +64,6 @@ export function CeaPlants({ role }: { role: Role }) {
               type="button"
               onClick={() => {
                 setFuel(name)
-                logLine(role.id, `Fuel filter set to ${name}`)
               }}
               className={cn(
                 'border-line inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] transition-colors',
@@ -82,7 +79,6 @@ export function CeaPlants({ role }: { role: Role }) {
             value={state ?? 'all'}
             onValueChange={(value) => {
               setState(value === 'all' ? null : value)
-              logLine(role.id, `State filter set to ${value === 'all' ? 'all states' : value}`)
             }}
           >
             <SelectTrigger className="h-8 w-[168px] rounded-full text-[12px]">
@@ -120,7 +116,6 @@ export function CeaPlants({ role }: { role: Role }) {
               selectedId={selectedSiteId}
               onRowClick={(site) => {
                 selectSite(site.id)
-                logLine(role.id, `Selected ${site.name} — ${site.fuel ?? 'unknown fuel'}, ${site.state}`)
               }}
             />
           </Panel>
@@ -147,7 +142,7 @@ export function CeaPlants({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} />
+      <SiteDetailDrawer />
     </div>
   )
 }

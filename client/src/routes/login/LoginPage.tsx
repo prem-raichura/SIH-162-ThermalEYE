@@ -5,7 +5,6 @@ import { Brand } from '@/components/shell/Brand'
 import { Button } from '@/components/ui/button'
 import { ROLE_LIST, roleEmail } from '@/lib/roles'
 import { DEMO_PASSWORD, useRoleStore } from '@/store/useRole'
-import { logLine } from '@/store/useConsole'
 import { meta, model } from '@/lib/data'
 import { nf } from '@/lib/format'
 
@@ -32,7 +31,6 @@ export function LoginPage() {
       setError(result.error)
       return
     }
-    logLine('INFO', `Logged in as ${result.roleId.toUpperCase()}`)
     navigate(`/${result.roleId}`)
   }
 

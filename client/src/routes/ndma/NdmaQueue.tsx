@@ -8,10 +8,8 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Actions } from './alertActions'
 import { useFirmsPass, useNdmaFeed, type FeedAlert } from './useNdmaData'
-import { DISPOSITION_LABEL, useNdma, type Disposition } from '@/store/useNdma'
-import { ROUTE_LABEL } from '@/lib/severity'
+import { useNdma, type Disposition } from '@/store/useNdma'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { istClock, nf } from '@/lib/format'
 import type { Alert } from '@/lib/types'
 import type { Role } from '@/lib/roles'
@@ -25,7 +23,6 @@ export function NdmaQueue({ role }: { role: Role }) {
   const feed = useNdmaFeed()
   const selectAlert = useNdma((s) => s.selectAlert)
   const setDisposition = useNdma((s) => s.setDisposition)
-  const config = useNdma((s) => s.config)
   const passes = useNdma((s) => s.passes)
   const selectSite = useFilters((s) => s.selectSite)
   const [reportFor, setReportFor] = useState<string | null>(null)
@@ -45,17 +42,10 @@ export function NdmaQueue({ role }: { role: Role }) {
   const onSelect = (alert: Alert) => {
     selectAlert(alert.id)
     selectSite(alert.siteId)
-    logLine(role.id, `Opened alert ${alert.id} — ${alert.siteName}, ${alert.severity} severity`)
   }
 
   const dispose = (alert: FeedAlert, disposition: Disposition) => {
     setDisposition(alert.id, disposition)
-    logLine(
-      role.id,
-      `${DISPOSITION_LABEL[disposition]} ${alert.id} — ${alert.siteName}${
-        disposition === 'escalated' ? ` · sent to ${ROUTE_LABEL[config.routing.high]}` : ''
-      }`,
-    )
   }
 
   return (
@@ -74,7 +64,6 @@ export function NdmaQueue({ role }: { role: Role }) {
         action="Generate report"
         onAction={() => {
           setReportFor(feed.selected?.siteId ?? feed.active[0]?.siteId ?? null)
-          logLine(role.id, 'Evidence report generated from the alert queue')
         }}
       />
 
@@ -108,7 +97,6 @@ export function NdmaQueue({ role }: { role: Role }) {
                         onDispose={dispose}
                         onClear={(a) => {
                           setDisposition(a.id, null)
-                          logLine(role.id, `Returned ${a.id} to the active queue`)
                         }}
                       />
                     )}
@@ -129,7 +117,7 @@ export function NdmaQueue({ role }: { role: Role }) {
         </Panel>
       </div>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

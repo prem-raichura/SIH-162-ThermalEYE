@@ -9,7 +9,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { useCpcbSites } from './useCpcbData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { INDUSTRIAL_CLASSES, siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
@@ -37,7 +36,7 @@ export function CpcbSites({ role }: { role: Role }) {
       />
 
       <Panel bodyClassName="py-2.5">
-        <FilterBar role="cpcb" classes={INDUSTRIAL_CLASSES} states={states} />
+        <FilterBar classes={INDUSTRIAL_CLASSES} states={states} />
       </Panel>
 
       {/* The table cell stretches to the row height, which the map column sets. Taking the
@@ -69,7 +68,6 @@ export function CpcbSites({ role }: { role: Role }) {
               selectedId={selectedSiteId}
               onRowClick={(site) => {
                 selectSite(site.id)
-                logLine(role.id, `Selected ${site.name} — ${site.predictedLabel}, ${site.state}`)
               }}
             />
           </Panel>
@@ -89,7 +87,7 @@ export function CpcbSites({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )

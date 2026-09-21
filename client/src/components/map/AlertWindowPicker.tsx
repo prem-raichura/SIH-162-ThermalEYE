@@ -1,5 +1,4 @@
 import { ALERT_WINDOWS, useNdma } from '@/store/useNdma'
-import { logLine } from '@/store/useConsole'
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,7 +25,6 @@ export function AlertWindowPicker({ className }: { className?: string }) {
           type="button"
           onClick={() => {
             setWindow(w.hours)
-            logLine('INFO', `Alert window set to ${w.hours === 0 ? 'all alerts' : `the last ${w.hours} hours`}`)
           }}
           aria-pressed={windowHours === w.hours}
           className={cn(

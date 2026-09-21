@@ -6,8 +6,7 @@
  */
 import { SettingsSection, NumberField } from './controls'
 import { useRoleSettings, useDraftFor } from '@/store/useRoleSettings'
-import { DEFAULT_ROLE_SETTINGS, FIELD_META, formatSetting, type FieldMeta } from '@/lib/roleSettings'
-import { logLine } from '@/store/useConsole'
+import { DEFAULT_ROLE_SETTINGS, FIELD_META, type FieldMeta } from '@/lib/roleSettings'
 import type { Role } from '@/lib/roles'
 
 export function ThresholdsSection({
@@ -32,7 +31,6 @@ export function ThresholdsSection({
   const reset = () => {
     const defaults = DEFAULT_ROLE_SETTINGS[role.id] as unknown as Record<string, unknown>
     patch(role.id, Object.fromEntries(fields.map(([key]) => [key, defaults[key]])) as never)
-    logLine(role.id, 'Thresholds returned to the shipped defaults \u2014 not saved yet')
   }
 
   return (
@@ -43,7 +41,6 @@ export function ThresholdsSection({
           meta={meta}
           value={draft[key]}
           onChange={(value) => patch(role.id, { [key]: value } as never)}
-          onCommit={() => logLine(role.id, `${meta.label} set to ${formatSetting(draft[key], meta)}`)}
         />
       ))}
     </SettingsSection>

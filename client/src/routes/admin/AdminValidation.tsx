@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/shell/PageHeader'
 import { Panel } from '@/components/panels/Panel'
 import { StatTile } from '@/components/panels/StatTile'
 import { validation } from '@/lib/data'
-import { logLine } from '@/store/useConsole'
 import { STATUS } from '@/lib/chart'
 import { nf, pct } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -105,7 +104,6 @@ export function AdminValidation({ role }: { role: Role }) {
                 type="button"
                 onClick={() => {
                   setFilter(id)
-                  logLine(role.id, `Transition view filtered to ${id}`)
                 }}
                 className={cn(
                   'border-line rounded-full border px-2.5 py-1 text-[11.5px] capitalize',

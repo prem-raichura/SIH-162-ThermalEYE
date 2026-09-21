@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { type Role } from '@/lib/roles'
 import { useRoleStore } from '@/store/useRole'
-import { logLine } from '@/store/useConsole'
 
 export function AccountMenu({ role, email }: { role: Role; email: string }) {
   const navigate = useNavigate()
@@ -37,7 +36,6 @@ export function AccountMenu({ role, email }: { role: Role; email: string }) {
           onSelect={() => {
             signOut()
             navigate('/login')
-            logLine('INFO', 'Session ended')
           }}
           className="gap-2.5"
         >

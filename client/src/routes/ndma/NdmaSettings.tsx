@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
 import { useNdma } from '@/store/useNdma'
 import { useNdmaFeed } from './useNdmaData'
-import { logLine } from '@/store/useConsole'
 import { ROUTES, SEVERITY_LABEL, SEVERITY_ORDER, type RouteId } from '@/lib/severity'
 import { CLASS_LABELS } from '@/lib/classes'
 import { nf } from '@/lib/format'
@@ -46,7 +45,6 @@ export function NdmaSettings({ role }: { role: Role }) {
         subtitle="Percent above the site's own normal ceiling"
         onReset={() => {
           resetConfig()
-          logLine(role.id, 'Severity policy reset to the shipped defaults')
         }}
       >
         <SettingRow
@@ -61,7 +59,6 @@ export function NdmaSettings({ role }: { role: Role }) {
             step={5}
             value={config.highPct}
             onChange={(e) => setBand('highPct', Number(e.target.value))}
-            onMouseUp={() => logLine(role.id, `High-severity band set to +${config.highPct}% over normal`)}
             aria-label="High severity band"
             style={{ accentColor: 'var(--role-accent)' }}
             className="w-44"
@@ -80,7 +77,6 @@ export function NdmaSettings({ role }: { role: Role }) {
             step={5}
             value={config.mediumPct}
             onChange={(e) => setBand('mediumPct', Number(e.target.value))}
-            onMouseUp={() => logLine(role.id, `Medium-severity band set to +${config.mediumPct}% over normal`)}
             aria-label="Medium severity band"
             style={{ accentColor: 'var(--role-accent)' }}
             className="w-44"
@@ -99,7 +95,6 @@ export function NdmaSettings({ role }: { role: Role }) {
             step={0.05}
             value={config.minConfidence}
             onChange={(e) => setMinConfidence(Number(e.target.value))}
-            onMouseUp={() => logLine(role.id, `Confidence floor set to ${config.minConfidence.toFixed(2)}`)}
             aria-label="Minimum confidence"
             style={{ accentColor: 'var(--role-accent)' }}
             className="w-44"
@@ -118,7 +113,6 @@ export function NdmaSettings({ role }: { role: Role }) {
               value={config.routing[severity]}
               onValueChange={(value) => {
                 setRoute(severity, value as RouteId)
-                logLine(role.id, `${SEVERITY_LABEL[severity]} severity now routes to ${value.replace('_', ' ')}`)
               }}
             >
               <SelectTrigger className="h-8 w-[190px] text-[12.5px]">
@@ -140,7 +134,6 @@ export function NdmaSettings({ role }: { role: Role }) {
             checked={config.quietHours.enabled}
             onCheckedChange={(enabled) => {
               setQuietHours({ enabled })
-              logLine(role.id, `Quiet hours ${enabled ? 'enabled' : 'disabled'}`)
             }}
             aria-label="Quiet hours"
           />
@@ -173,7 +166,6 @@ export function NdmaSettings({ role }: { role: Role }) {
           selected={included}
           onToggle={(cls) => {
             toggleClass(cls)
-            logLine(role.id, `${CLASS_LABELS[cls]} ${config.excludedClasses.includes(cls) ? 'restored to' : 'removed from'} the response feed`)
           }}
         />
         <p className="text-ink-faint mt-3 text-[11.5px]">
@@ -191,7 +183,6 @@ export function NdmaSettings({ role }: { role: Role }) {
             className="gap-1.5 rounded-[9px]"
             onClick={() => {
               resetConfig()
-              logLine(role.id, 'Severity policy reset to the shipped defaults')
             }}
           >
             <RotateCcw size={13} strokeWidth={1.8} />

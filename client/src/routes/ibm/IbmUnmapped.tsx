@@ -10,7 +10,6 @@ import { QualityChip } from '@/components/panels/QualityChip'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { candidateRank, useIbmSites } from './useIbmData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { coord, days, kelvin, nf, shortDate } from '@/lib/format'
 import { tHotColor } from '@/lib/thermal'
 import type { Role } from '@/lib/roles'
@@ -76,7 +75,6 @@ export function IbmUnmapped({ role }: { role: Role }) {
               selectedId={selected?.id ?? null}
               onSelect={(row) => {
                 selectUnmapped(row.id)
-                logLine(role.id, `Inspecting candidate #${row.rank} — ${row.state}`)
               }}
             />
           </Panel>

@@ -1,5 +1,4 @@
 import { useLayers } from '@/store/useLayers'
-import { logLine } from '@/store/useConsole'
 import { cn } from '@/lib/utils'
 
 export function BasemapToggle() {
@@ -21,7 +20,6 @@ export function BasemapToggle() {
             type="button"
             onClick={() => {
               setBasemap(o.id)
-              logLine('INFO', `Basemap set to ${o.label.toLowerCase()}`)
             }}
             className={cn(
               'rounded-full px-3.5 py-1 text-[12.5px] transition-colors',

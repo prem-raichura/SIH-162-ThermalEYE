@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { useNrscData } from './useNrscData'
 import { DEFAULT_PROVENANCE, useNrsc } from '@/store/useNrsc'
 import { useSettingsFor } from '@/store/useRoleSettings'
-import { logLine } from '@/store/useConsole'
 import {
   EXPORT_FIELDS,
   FIELD_GROUP_LABEL,
@@ -52,14 +51,12 @@ export function NrscExport({ role }: { role: Role }) {
     const name = `thermaleye-sites-${stamp()}.geojson`
     downloadText(name, 'application/geo+json', JSON.stringify(sitesToExportGeoJson(published), null, 2))
     setLastFile(name)
-    logLine(role.id, `Exported ${nf(published.length)} records as GeoJSON — ${name}`)
   }
 
   const exportCsv = () => {
     const name = `thermaleye-sites-${stamp()}.csv`
     downloadText(name, 'text/csv', sitesToCsv(published))
     setLastFile(name)
-    logLine(role.id, `Exported ${nf(published.length)} records as CSV — ${name}`)
   }
 
   return (

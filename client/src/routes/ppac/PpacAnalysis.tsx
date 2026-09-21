@@ -10,7 +10,6 @@ import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Button } from '@/components/ui/button'
 import { usePpacSites } from './usePpacData'
 import { useFilters } from '@/store/useFilters'
-import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { kelvin, megawatt, nf, sqm } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -62,7 +61,6 @@ export function PpacAnalysis({ role }: { role: Role }) {
         onAction={() => {
           if (!site) return
           setReportFor(site.id)
-          logLine(role.id, `Evidence report generated for ${site.name}`)
         }}
       />
 
@@ -76,7 +74,6 @@ export function PpacAnalysis({ role }: { role: Role }) {
               selectedId={site?.id ?? null}
               onRowClick={(s) => {
                 selectSite(s.id)
-                logLine(role.id, `Baseline opened for ${s.name}`)
               }}
             />
           </Panel>
@@ -118,7 +115,6 @@ export function PpacAnalysis({ role }: { role: Role }) {
                       size="sm"
                       onClick={() => {
                         setNightOnly(true)
-                        logLine(role.id, 'Profile switched to the night-only retrieval')
                       }}
                       className={cn('h-7 gap-1.5 rounded-full px-2.5 text-[11.5px]', nightOnly && 'bg-ink text-paper')}
                     >
@@ -130,7 +126,6 @@ export function PpacAnalysis({ role }: { role: Role }) {
                       size="sm"
                       onClick={() => {
                         setNightOnly(false)
-                        logLine(role.id, 'Profile switched to all passes')
                       }}
                       className={cn('h-7 gap-1.5 rounded-full px-2.5 text-[11.5px]', !nightOnly && 'bg-ink text-paper')}
                     >
@@ -162,7 +157,7 @@ export function PpacAnalysis({ role }: { role: Role }) {
         </div>
       </div>
 
-      <SiteDetailDrawer role={role} onGenerateReport={setReportFor} />
+      <SiteDetailDrawer onGenerateReport={setReportFor} />
       <EvidenceReportDialog siteId={reportFor} open={reportFor !== null} onOpenChange={(o) => !o && setReportFor(null)} />
     </div>
   )
