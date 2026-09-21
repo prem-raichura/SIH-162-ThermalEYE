@@ -14,6 +14,7 @@ import { logLine } from '@/store/useConsole'
 import { coord, days, kelvin, nf, shortDate } from '@/lib/format'
 import { tHotColor } from '@/lib/thermal'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /**
  * Section 16 discovery, read through a mining lens: bare and built-up ground dominant,
@@ -21,6 +22,7 @@ import type { Role } from '@/lib/roles'
  * "no mine mapped here" means anything at all.
  */
 export function IbmUnmapped({ role }: { role: Role }) {
+  const settings = useSettingsFor('ibm')
   const { candidates } = useIbmSites()
   const selectUnmapped = useFilters((s) => s.selectUnmapped)
   const selectedId = useFilters((s) => s.selectedUnmappedId)
@@ -29,7 +31,7 @@ export function IbmUnmapped({ role }: { role: Role }) {
   const selected = useMemo(() => rows.find((r) => r.id === selectedId) ?? rows[0], [rows, selectedId])
 
   const farFromMines = rows.filter((r) => r.distanceToKnownMineKm > 10).length
-  const trustworthy = rows.filter((r) => r.coverageQualityScore >= 0.66).length
+  const trustworthy = rows.filter((r) => r.coverageQualityScore >= settings.trustworthyCoverage).length
 
   return (
     <div className="flex flex-col gap-4">
@@ -117,7 +119,7 @@ export function IbmUnmapped({ role }: { role: Role }) {
               <div className="border-line mt-3 border-t pt-3">
                 <QualityChip label="Coverage quality" score={selected.coverageQualityScore} />
                 <p className="text-ink-soft mt-2 text-[12px]">
-                  {selected.coverageQualityScore >= 0.66
+                  {selected.coverageQualityScore >= settings.trustworthyCoverage
                     ? 'Mapping effort here is high, so the absence of a listed mine is informative.'
                     : 'Mapping effort here is low. Absence of a listed mine says little; the reading rests on the thermal record and the land cover.'}
                 </p>

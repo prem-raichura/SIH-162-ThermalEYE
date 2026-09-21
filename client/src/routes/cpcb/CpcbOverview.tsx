@@ -16,10 +16,12 @@ import { logLine } from '@/store/useConsole'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 const TABLE_HINT = 'The full site list is on the Industrial Sites page.'
 
 export function CpcbOverview({ role }: { role: Role }) {
+  const settings = useSettingsFor('cpcb')
   const navigate = useNavigate()
   const { filtered } = useCpcbSites()
   const unmapped = useUnmappedQueue()
@@ -30,8 +32,11 @@ export function CpcbOverview({ role }: { role: Role }) {
   const [reportFor, setReportFor] = useState<string | null>(null)
 
   const highPriority = useMemo(
-    () => unmapped.filter((u) => u.assessment === 'industrial-like' && u.persistenceDays > 180).length,
-    [unmapped],
+    () =>
+      unmapped.filter(
+        (u) => u.assessment === 'industrial-like' && u.persistenceDays > settings.industrialLikePersistDays,
+      ).length,
+    [unmapped, settings.industrialLikePersistDays],
   )
 
   const readings: Reading[] = [

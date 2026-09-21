@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { STATUS } from '@/lib/chart'
+import { useActiveSettings } from '@/store/useRoleSettings'
 
 /** A 0-1 quality or coverage score, shown as a meter so "how much to trust this" is visible. */
 export function QualityChip({
@@ -13,7 +14,11 @@ export function QualityChip({
   className?: string
   width?: number
 }) {
-  const color = score >= 0.66 ? STATUS.good : score >= 0.4 ? STATUS.warning : STATUS.critical
+  // The "trustworthy" line is the signed-in role's own, so a meter and the count beside it
+  // can never disagree about what counts as well mapped.
+  const settings = useActiveSettings()
+  const good = 'trustworthyCoverage' in settings ? settings.trustworthyCoverage : 0.66
+  const color = score >= good ? STATUS.good : score >= good * 0.6 ? STATUS.warning : STATUS.critical
   return (
     <span className={cn('inline-flex items-center gap-1.5 text-[11.5px]', className)}>
       {label && <span className="text-ink-soft">{label}</span>}

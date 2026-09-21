@@ -15,10 +15,15 @@ import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 export function CeaPlants({ role }: { role: Role }) {
+  const settings = useSettingsFor('cea')
   const { filtered, plants, fuels, fuel, setFuel, states } = useCeaSites()
-  const fuelSlices = useMemo(() => fuels.slice(0, 5).map(([label, value]) => ({ label, value })), [fuels])
+  const fuelSlices = useMemo(
+    () => fuels.slice(0, settings.fuelTopN).map(([label, value]) => ({ label, value })),
+    [fuels, settings.fuelTopN],
+  )
   const selectSite = useFilters((s) => s.selectSite)
   const openDetail = useFilters((s) => s.openDetail)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)

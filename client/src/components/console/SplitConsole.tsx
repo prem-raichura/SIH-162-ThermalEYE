@@ -6,6 +6,7 @@ import { useConsole } from '@/store/useConsole'
 import { ROLE_LIST, type Role } from '@/lib/roles'
 import { useIsCompact, useIsMobile } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/utils'
+import { useActiveSettings } from '@/store/useRoleSettings'
 
 const HEADER_H = 40
 // Below this the status panel and the action buttons stop fitting.
@@ -17,6 +18,7 @@ const MIN_H = 208
  */
 export function SplitConsole({ role }: { role: Role }) {
   const { lines, filter, autoScroll, collapsed, height } = useConsole()
+  const consoleAutoScroll = useActiveSettings().consoleAutoScroll
   const { clear, setFilter, setAutoScroll, setCollapsed, setHeight } = useConsole()
   const dragFrom = useRef<{ y: number; h: number } | null>(null)
   const isMobile = useIsMobile()
@@ -134,7 +136,7 @@ export function SplitConsole({ role }: { role: Role }) {
           </ul>
 
           <div className="bg-con-panel border-con-line min-h-0 min-w-0 overflow-hidden rounded-[10px] border">
-            <LogStream lines={visible} autoScroll={autoScroll} />
+            <LogStream lines={visible} autoScroll={autoScroll && consoleAutoScroll} />
           </div>
 
           {!isCompact && <LiveStatus role={role} lineCount={lines.length} />}

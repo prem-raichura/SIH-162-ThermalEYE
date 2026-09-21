@@ -13,19 +13,21 @@ import { tHotColor } from '@/lib/thermal'
 import { coord, days, kelvin, nf, shortDate } from '@/lib/format'
 import { Radar, ShieldQuestion, Thermometer } from 'lucide-react'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /**
  * The role's headline output (section 16). A candidate is never called industrial outright —
  * it is a Persistent Unmapped Thermal Source with an assessment attached.
  */
 export function CpcbUnmapped({ role }: { role: Role }) {
+  const settings = useSettingsFor('cpcb')
   const rows = useUnmappedQueue()
   const selectUnmapped = useFilters((s) => s.selectUnmapped)
   const selectedId = useFilters((s) => s.selectedUnmappedId)
   const selected = useMemo(() => rows.find((r) => r.id === selectedId) ?? rows[0], [rows, selectedId])
 
   const industrialLike = rows.filter((r) => r.assessment === 'industrial-like').length
-  const trustworthy = rows.filter((r) => r.coverageQualityScore >= 0.66).length
+  const trustworthy = rows.filter((r) => r.coverageQualityScore >= settings.trustworthyCoverage).length
   const hottest = rows.reduce((a, r) => Math.max(a, r.tHot), 0)
 
   return (
@@ -116,7 +118,7 @@ export function CpcbUnmapped({ role }: { role: Role }) {
               <div className="border-line mt-3 border-t pt-3">
                 <QualityChip label="Coverage quality" score={selected.coverageQualityScore} />
                 <p className="text-ink-soft mt-2 text-[12px]">
-                  {selected.coverageQualityScore >= 0.66
+                  {selected.coverageQualityScore >= settings.trustworthyCoverage
                     ? 'Mapping effort here is high, so the absence of a facility is informative.'
                     : 'Mapping effort here is low, so absence of a facility carries little information. The assessment rests on thermal physics and temporal behaviour alone.'}
                 </p>

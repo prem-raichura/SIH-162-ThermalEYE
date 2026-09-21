@@ -10,9 +10,11 @@ import { STATUS } from '@/lib/chart'
 import { nf, pct } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /** Section 26. Everything computable is computed from the shipped sites; the rest says so. */
 export function AdminPerformance({ role }: { role: Role }) {
+  const settings = useSettingsFor('admin')
   const perClass = useMemo(() => [...model.perClass].sort((a, b) => b.support - a.support), [])
   const weakest = useMemo(() => [...model.perClass].sort((a, b) => a.f1 - b.f1)[0], [])
   const imbalanced = model.perClass.filter((c) => c.imbalanced).length
@@ -92,7 +94,7 @@ export function AdminPerformance({ role }: { role: Role }) {
                   <td className="tnum px-3 py-2 text-right font-mono text-[11.5px]">{row.precision.toFixed(3)}</td>
                   <td className="tnum px-3 py-2 text-right font-mono text-[11.5px]">{row.recall.toFixed(3)}</td>
                   <td className="tnum px-3 py-2 text-right font-mono text-[11.5px]">
-                    <Score value={row.f1} />
+                    <Score value={row.f1} good={settings.f1Good} warn={settings.f1Warn} />
                   </td>
                   <td className="tnum px-3 py-2 text-right font-mono text-[11.5px]">{row.rocAuc.toFixed(3)}</td>
                   <td className={cn('tnum py-2 pl-3 text-right font-mono text-[11.5px]', row.imbalanced && 'font-semibold')}>
@@ -130,8 +132,8 @@ export function AdminPerformance({ role }: { role: Role }) {
   )
 }
 
-function Score({ value }: { value: number }) {
-  const color = value >= 0.85 ? STATUS.good : value >= 0.7 ? STATUS.warning : STATUS.critical
+function Score({ value, good, warn }: { value: number; good: number; warn: number }) {
+  const color = value >= good ? STATUS.good : value >= warn ? STATUS.warning : STATUS.critical
   return <span style={{ color }}>{value.toFixed(3)}</span>
 }
 

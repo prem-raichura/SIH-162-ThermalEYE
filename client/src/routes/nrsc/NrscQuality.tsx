@@ -16,6 +16,7 @@ import { NON_CLAIMS, PREFERRED_WORDING } from '@/lib/nonClaims'
 import { AXIS, CHART_CATEGORICAL, MARK, TOOLTIP_STYLE } from '@/lib/chart'
 import { nf, pctRaw } from '@/lib/format'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 const GAP_BINS = [
   { label: '0–7 d', from: 0, to: 8 },
@@ -31,6 +32,7 @@ const GAP_BINS = [
  * republishes — the section 32 non-claims in full, so the caveats travel with the data.
  */
 export function NrscQuality({ role }: { role: Role }) {
+  const settings = useSettingsFor('nrsc')
   const { filtered, counts } = useNrscData()
   const { data: loaded, pending, error, retry } = useAsyncData(loadDetections, 'Detection records')
   const detections = loaded ?? NO_DETECTIONS
@@ -100,7 +102,7 @@ export function NrscQuality({ role }: { role: Role }) {
         <StatTile
           icon={Timer}
           label="Within a week"
-          value={pctRaw(share(filtered.filter((s) => s.temporalGapDays <= 7).length))}
+          value={pctRaw(share(filtered.filter((s) => s.temporalGapDays <= settings.freshGapDays).length))}
           caption="Nearest usable acquisition inside 7 days"
         />
         <StatTile

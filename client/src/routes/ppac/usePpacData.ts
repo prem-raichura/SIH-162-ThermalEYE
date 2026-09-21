@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { sites as allSites, withinWindow } from '@/lib/data'
 import { useFilters } from '@/store/useFilters'
+import { nf } from '@/lib/format'
 import type { SourceClass, ThermalSite } from '@/lib/types'
 
 export const PPAC_CLASSES: SourceClass[] = ['refinery', 'gas_flare', 'lng_gas']
@@ -52,37 +53,45 @@ export interface SignatureCheck {
   pass: boolean
 }
 
-export function flareSignature(site: ThermalSite): SignatureCheck[] {
+export interface FlareConfig {
+  flarePersistDays: number
+  flareNightRatio: number
+  flareDeltaT: number
+  flareTHot: number
+  flareMaxAreaM2: number
+}
+
+export function flareSignature(site: ThermalSite, cfg: FlareConfig): SignatureCheck[] {
   return [
     {
       label: 'Persistent',
       value: `${site.persistenceDays} d`,
-      threshold: 'over 180 d',
-      pass: site.persistenceDays > 180,
+      threshold: `over ${nf(cfg.flarePersistDays)} d`,
+      pass: site.persistenceDays > cfg.flarePersistDays,
     },
     {
       label: 'Night-active',
       value: site.nightRatio.toFixed(2),
-      threshold: 'night ratio above 0.45',
-      pass: site.nightRatio > 0.45,
+      threshold: `night ratio above ${cfg.flareNightRatio.toFixed(2)}`,
+      pass: site.nightRatio > cfg.flareNightRatio,
     },
     {
       label: 'High dual-band contrast',
       value: `${site.deltaT ?? 0} K`,
-      threshold: 'ΔT above 35 K',
-      pass: (site.deltaT ?? 0) > 35,
+      threshold: `ΔT above ${nf(cfg.flareDeltaT)} K`,
+      pass: (site.deltaT ?? 0) > cfg.flareDeltaT,
     },
     {
       label: 'High retrieved temperature',
       value: `${site.tHot ?? 0} K`,
-      threshold: 'T_hot above 1,300 K',
-      pass: (site.tHot ?? 0) > 1300,
+      threshold: `T_hot above ${nf(cfg.flareTHot)} K`,
+      pass: (site.tHot ?? 0) > cfg.flareTHot,
     },
     {
       label: 'Small source area',
       value: `${site.sourceAreaM2 ?? 0} m²`,
-      threshold: 'under 300 m²',
-      pass: (site.sourceAreaM2 ?? 0) < 300,
+      threshold: `under ${nf(cfg.flareMaxAreaM2)} m²`,
+      pass: (site.sourceAreaM2 ?? 0) < cfg.flareMaxAreaM2,
     },
   ]
 }

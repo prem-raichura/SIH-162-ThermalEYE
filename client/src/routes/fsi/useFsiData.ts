@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import {
-  NON_INDUSTRIAL_CLASSES,
   loadDetections,
   sites as allSites,
   siteById,
@@ -12,9 +11,8 @@ import { useAsyncData } from '@/hooks/useAsyncData'
 /** One frozen empty array, so a pending load does not re-key every memo below it. */
 const NO_DETECTIONS: Detection[] = []
 import { useFilters } from '@/store/useFilters'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import type { SourceClass } from '@/lib/types'
-
-export const FSI_CLASSES: SourceClass[] = NON_INDUSTRIAL_CLASSES
 
 /**
  * FSI runs national fire alerting off the same FIRMS feed, and their problem is the inverse
@@ -25,8 +23,11 @@ export function useFsiSites() {
   const classes = useFilters((s) => s.classes)
   const state = useFilters((s) => s.state)
   const window = useFilters((s) => s.window)
+  // Which classes belong to the fire branch at all is a setting: a desk that does not act on
+  // waste fires should not have to look at them.
+  const branch = useSettingsFor('fsi').vegetationClasses
 
-  const vegetation = useMemo(() => allSites.filter((s) => FSI_CLASSES.includes(s.predictedClass)), [])
+  const vegetation = useMemo(() => allSites.filter((s) => branch.includes(s.predictedClass)), [branch])
   const industrial = useMemo(() => allSites.filter((s) => s.branch === 'industrial'), [])
 
   const filtered = useMemo(
@@ -114,5 +115,9 @@ export function useSeasonalCounts() {
   }
 }
 
-/** The stated separation threshold of section 7.1, used by the scatter and the counters. */
+/**
+ * The shipped separation threshold of section 7.1. It is the default behind FSI's
+ * `deltaTBoundary` setting; the pages read the setting, so this is the value an untouched
+ * install reproduces rather than a constant anything compares against directly.
+ */
 export const DELTA_T_BOUNDARY = 30

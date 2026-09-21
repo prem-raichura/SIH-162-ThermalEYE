@@ -105,3 +105,10 @@ export function routeFor(severity: Severity, config: SeverityConfig, quiet: bool
   const held = quiet && severity !== 'high' && route !== 'log_only'
   return { route: held ? 'log_only' : route, label: held ? 'Held — quiet hours' : ROUTE_LABEL[route], held }
 }
+
+/** Tiers at or above a role's chosen floor. 'all' lets every tier through. */
+export function atOrAboveFloor(severity: Severity, floor: 'all' | 'medium' | 'high'): boolean {
+  if (floor === 'all') return true
+  if (floor === 'high') return severity === 'high'
+  return severity !== 'low'
+}

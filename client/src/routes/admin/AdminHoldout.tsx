@@ -8,9 +8,11 @@ import { STATUS } from '@/lib/chart'
 import { nf, pct } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /** Section 22: whole regions train, one region is never seen. */
 export function AdminHoldout({ role }: { role: Role }) {
+  const settings = useSettingsFor('admin')
   const holdout = model.holdout
   const gap = (holdout.testAccuracy ?? 0) - (holdout.trainingAccuracy ?? 0)
 
@@ -98,9 +100,9 @@ export function AdminHoldout({ role }: { role: Role }) {
                           color:
                             region.accuracy === null
                               ? undefined
-                              : region.accuracy >= 0.88
+                              : region.accuracy >= settings.holdoutGood
                                 ? STATUS.good
-                                : region.accuracy >= 0.8
+                                : region.accuracy >= settings.holdoutWarn
                                   ? STATUS.warning
                                   : STATUS.critical,
                         }}

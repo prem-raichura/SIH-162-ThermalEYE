@@ -33,6 +33,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     analysis: page(() => import('./ppac/PpacAnalysis'), 'PpacAnalysis'),
     alerts: page(() => import('./ppac/PpacAlerts'), 'PpacAlerts'),
     reports: page(() => import('./ppac/PpacReports'), 'PpacReports'),
+    settings: page(() => import('./ppac/PpacSettings'), 'PpacSettings'),
   },
   cea: {
     '': page(() => import('./cea/CeaOverview'), 'CeaOverview'),
@@ -42,6 +43,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     alerts: page(() => import('./cea/CeaAlerts'), 'CeaAlerts'),
     historical: page(() => import('./cea/CeaHistorical'), 'CeaHistorical'),
     reports: page(() => import('./cea/CeaReports'), 'CeaReports'),
+    settings: page(() => import('./cea/CeaSettings'), 'CeaSettings'),
   },
   ibm: {
     '': page(() => import('./ibm/IbmOverview'), 'IbmOverview'),
@@ -49,6 +51,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     unmapped: page(() => import('./ibm/IbmUnmapped'), 'IbmUnmapped'),
     landcover: page(() => import('./ibm/IbmLandCover'), 'IbmLandCover'),
     reports: page(() => import('./ibm/IbmReports'), 'IbmReports'),
+    settings: page(() => import('./ibm/IbmSettings'), 'IbmSettings'),
   },
   fsi: {
     '': page(() => import('./fsi/FsiOverview'), 'FsiOverview'),
@@ -59,6 +62,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     vegetation: page(() => import('./fsi/FsiVegetation'), 'FsiVegetation'),
     seasonal: page(() => import('./fsi/FsiSeasonal'), 'FsiSeasonal'),
     reports: page(() => import('./fsi/FsiReports'), 'FsiReports'),
+    settings: page(() => import('./fsi/FsiSettings'), 'FsiSettings'),
   },
   ndma: {
     '': page(() => import('./ndma/NdmaLiveAlerts'), 'NdmaLiveAlerts'),
@@ -67,6 +71,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     severity: page(() => import('./ndma/NdmaSeverity'), 'NdmaSeverity'),
     analytics: page(() => import('./ndma/NdmaAnalytics'), 'NdmaAnalytics'),
     reports: page(() => import('./ndma/NdmaReports'), 'NdmaReports'),
+    settings: page(() => import('./ndma/NdmaSettings'), 'NdmaSettings'),
   },
   nrsc: {
     '': page(() => import('./nrsc/NrscLayer'), 'NrscLayer'),
@@ -75,6 +80,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     quality: page(() => import('./nrsc/NrscQuality'), 'NrscQuality'),
     export: page(() => import('./nrsc/NrscExport'), 'NrscExport'),
     reports: page(() => import('./nrsc/NrscReports'), 'NrscReports'),
+    settings: page(() => import('./nrsc/NrscSettings'), 'NrscSettings'),
   },
   admin: {
     '': page(() => import('./admin/AdminPerformance'), 'AdminPerformance'),
@@ -83,6 +89,7 @@ const PAGES: Partial<Record<RoleId, Record<string, RolePage>>> = {
     sources: page(() => import('./admin/AdminSources'), 'AdminSources'),
     holdout: page(() => import('./admin/AdminHoldout'), 'AdminHoldout'),
     system: page(() => import('./admin/AdminSystem'), 'AdminSystem'),
+    settings: page(() => import('./admin/AdminSettings'), 'AdminSettings'),
   },
 }
 

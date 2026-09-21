@@ -16,10 +16,12 @@ import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 const TABLE_HINT = 'The full station list is on the Power Plants page.'
 
 export function CeaOverview({ role }: { role: Role }) {
+  const settings = useSettingsFor('cea')
   const navigate = useNavigate()
   const { filtered, alerts } = useCeaSites()
   const selectSite = useFilters((s) => s.selectSite)
@@ -30,9 +32,9 @@ export function CeaOverview({ role }: { role: Role }) {
 
   const stats = useMemo(() => {
     const abnormal = filtered.filter((s) => s.behaviour === 'abnormal').length
-    const watch = filtered.filter((s) => s.behaviour === 'normal' && s.frpSlope > 0.03).length
+    const watch = filtered.filter((s) => s.behaviour === 'normal' && s.frpSlope > settings.risingSlope).length
     return { abnormal, watch }
-  }, [filtered])
+  }, [filtered, settings.risingSlope])
 
   const readings: Reading[] = [
     { label: 'Stations', value: nf(filtered.length) },

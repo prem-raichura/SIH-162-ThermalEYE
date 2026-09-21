@@ -15,8 +15,11 @@ import { alerts as allAlerts, siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Alert } from '@/lib/types'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
+import { atOrAboveFloor } from '@/lib/severity'
 
 export function PpacAlerts({ role }: { role: Role }) {
+  const settings = useSettingsFor('ppac')
   const { filtered } = usePpacSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -27,13 +30,14 @@ export function PpacAlerts({ role }: { role: Role }) {
     () =>
       allAlerts
         .filter((a) => siteIds.has(a.siteId))
+        .filter((a) => atOrAboveFloor(a.severity, settings.alertMinSeverity))
         .map((a): Alert => (acknowledged.includes(a.id) ? { ...a, status: 'acknowledged' } : a)),
-    [siteIds, acknowledged],
+    [siteIds, acknowledged, settings.alertMinSeverity],
   )
 
   const site = siteById(selectedSiteId)
   const high = alerts.filter((a) => a.severity === 'high').length
-  const saturating = filtered.filter((s) => s.saturationFraction > 0.25).length
+  const saturating = filtered.filter((s) => s.saturationFraction > settings.saturationCutoff).length
 
   return (
     <div className="flex flex-col gap-4">

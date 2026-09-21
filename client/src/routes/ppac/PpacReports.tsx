@@ -9,6 +9,7 @@ import { FlareSignature } from '@/components/panels/FlareSignature'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import { flareSignature, usePpacSites } from './usePpacData'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
@@ -16,6 +17,7 @@ import { nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
 
 export function PpacReports({ role }: { role: Role }) {
+  const settings = useSettingsFor('ppac')
   const { filtered } = usePpacSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -73,7 +75,7 @@ export function PpacReports({ role }: { role: Role }) {
                 <ShapEvidence siteId={site.id} />
               </Panel>
               <Panel title="Flare signature">
-                <FlareSignature checks={flareSignature(site)} siteName={site.name} />
+                <FlareSignature checks={flareSignature(site, settings)} siteName={site.name} />
               </Panel>
             </>
           ) : (

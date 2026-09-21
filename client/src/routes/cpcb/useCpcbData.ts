@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { INDUSTRIAL_CLASSES, sites as allSites, unmapped as allUnmapped, withinWindow } from '@/lib/data'
 import { useFilters } from '@/store/useFilters'
-import { useSettings } from '@/store/useSettings'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /**
  * CPCB sees the industrial branch only (section 13). Membership follows the *predicted*
@@ -37,7 +37,7 @@ export function useCpcbSites() {
 
 /** The unmapped queue, gated by the coverage-quality floor set in Settings. */
 export function useUnmappedQueue() {
-  const minCoverage = useSettings((s) => s.minCoverageQuality)
+  const minCoverage = useSettingsFor('cpcb').minCoverageQuality
   const state = useFilters((s) => s.state)
 
   return useMemo(

@@ -16,10 +16,12 @@ import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import { useNavigate } from 'react-router-dom'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 const TABLE_HINT = 'The full site list is on the Mining Sites page.'
 
 export function IbmOverview({ role }: { role: Role }) {
+  const settings = useSettingsFor('ibm')
   const navigate = useNavigate()
   const { filtered, candidates } = useIbmSites()
   const selectUnmapped = useFilters((s) => s.selectUnmapped)
@@ -28,7 +30,10 @@ export function IbmOverview({ role }: { role: Role }) {
   const selected = siteById(selectedSiteId)
   const [reportFor, setReportFor] = useState<string | null>(null)
 
-  const longBurning = useMemo(() => filtered.filter((s) => s.persistenceDays > 365).length, [filtered])
+  const longBurning = useMemo(
+    () => filtered.filter((s) => s.persistenceDays > settings.longBurningDays).length,
+    [filtered, settings.longBurningDays],
+  )
   const ranked = useMemo(() => candidateRank(candidates), [candidates])
 
   const readings: Reading[] = [

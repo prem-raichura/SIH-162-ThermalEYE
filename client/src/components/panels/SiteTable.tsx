@@ -4,7 +4,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { ThermalSite } from '@/lib/types'
 import { CLASS_COLOR, tHotColor } from '@/lib/thermal'
 import { coord, days, megawatt, nf, shortDate } from '@/lib/format'
-import { formatTemp, useSettings } from '@/store/useSettings'
+import { formatTemp } from '@/lib/roleSettings'
+import { useActiveSettings } from '@/store/useRoleSettings'
 import { cn } from '@/lib/utils'
 import { EmptyState } from './EmptyState'
 
@@ -252,7 +253,7 @@ export function ColumnChooser({ value, onChange }: { value: ColumnId[]; onChange
 
 /** Temperature follows the unit chosen in Settings; the colour always follows the ramp. */
 function TempCell({ kelvin }: { kelvin: number | null }) {
-  const units = useSettings((s) => s.units)
+  const units = useActiveSettings().units
   return <span style={{ color: tHotColor(kelvin) }}>{formatTemp(kelvin, units)}</span>
 }
 
@@ -283,6 +284,11 @@ export function SiteTable({
 }) {
   const [sortBy, setSortBy] = useState<ColumnId>(columns[0])
   const [desc, setDesc] = useState(false)
+  // A page that names its own cap keeps it; everything else follows the role's setting, so
+  // "rows per table" is a real number rather than a preference nobody reads.
+  const { tableRows, density } = useActiveSettings()
+  const cap = maxRows ?? tableRows
+  const compact = density === 'compact'
 
   const rows = useMemo(() => {
     const col = COLUMNS[sortBy]
@@ -292,8 +298,8 @@ export function SiteTable({
       if (typeof av === 'number' && typeof bv === 'number') return desc ? bv - av : av - bv
       return desc ? String(bv).localeCompare(String(av)) : String(av).localeCompare(String(bv))
     })
-    return maxRows ? sorted.slice(0, maxRows) : sorted
-  }, [sites, sortBy, desc, maxRows])
+    return sorted.slice(0, cap)
+  }, [sites, sortBy, desc, cap])
 
   if (sites.length === 0) return <EmptyState title={emptyTitle} body={emptyBody} />
 
@@ -313,7 +319,8 @@ export function SiteTable({
                   key={id}
                   scope="col"
                   className={cn(
-                    'bg-card border-line sticky top-0 border-b px-3 py-2 font-normal first:pl-0 last:pr-0',
+                    'bg-card border-line sticky top-0 border-b px-3 font-normal first:pl-0 last:pr-0',
+                    compact ? 'py-1' : 'py-2',
                     col.align === 'right' ? 'text-right' : 'text-left',
                   )}
                 >
@@ -355,7 +362,8 @@ export function SiteTable({
                   <td
                     key={id}
                     className={cn(
-                      'max-w-[240px] px-3 py-2 first:pl-0 last:pr-0',
+                      'max-w-[240px] px-3 first:pl-0 last:pr-0',
+                      compact ? 'py-1' : 'py-2',
                       col.align === 'right' ? 'tnum text-right font-mono text-[11.5px]' : 'text-left',
                     )}
                   >

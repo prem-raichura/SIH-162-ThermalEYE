@@ -8,6 +8,7 @@ import { SwirPanel } from '@/components/panels/SwirPanel'
 import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { PPAC_CLASSES, flareSignature, usePpacSites } from './usePpacData'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
@@ -21,6 +22,7 @@ import type { Role } from '@/lib/roles'
  * 4 µm channel during the day, so the night-only retrieval is the honest one for flares.
  */
 export function PpacFlares({ role }: { role: Role }) {
+  const settings = useSettingsFor('ppac')
   const { filtered, states } = usePpacSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -41,7 +43,7 @@ export function PpacFlares({ role }: { role: Role }) {
         meta={[
           { label: 'Sites', value: nf(rows.length) },
           { label: 'Abnormal', value: nf(rows.filter((s) => s.behaviour === 'abnormal').length) },
-          { label: 'Saturating', value: nf(rows.filter((s) => s.saturationFraction > 0.2).length) },
+          { label: 'Saturating', value: nf(rows.filter((s) => s.saturationFraction > settings.saturationCutoff).length) },
         ]}
       />
 
@@ -119,7 +121,7 @@ export function PpacFlares({ role }: { role: Role }) {
           {selected ? (
             <>
               <Panel title="Why this reads as a flare" subtitle="Section 7.5 signature, checked against the retrieval">
-                <FlareSignature checks={flareSignature(selected)} siteName={selected.name} />
+                <FlareSignature checks={flareSignature(selected, settings)} siteName={selected.name} />
               </Panel>
               <Panel title="Sentinel-2 SWIR" subtitle="Hot units resolved inside the coarse thermal pixel">
                 <SwirPanel siteId={selected.id} siteName={selected.name} />

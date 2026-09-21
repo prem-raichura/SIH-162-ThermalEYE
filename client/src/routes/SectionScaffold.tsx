@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
 import type { Role } from '@/lib/roles'
+import { useActiveSettings } from '@/store/useRoleSettings'
 import { alerts as allAlerts, sites as allSites, siteById, unmapped } from '@/lib/data'
 import { CLASS_COLOR } from '@/lib/thermal'
 import { istClock, istDate, nf } from '@/lib/format'
@@ -49,15 +50,18 @@ export function SectionScaffold({
   const siteIds = useMemo(() => new Set(sites.map((s) => s.id)), [sites])
   const roleAlerts = useMemo(() => allAlerts.filter((a) => siteIds.has(a.siteId)), [siteIds])
 
+  const active = useActiveSettings()
+  const longBurningDays = 'longBurningDays' in active ? active.longBurningDays : 365
+
   const stats = useMemo(() => {
     const abnormal = sites.filter((s) => s.behaviour === 'abnormal').length
-    const persistent = sites.filter((s) => s.persistenceDays > 365).length
+    const persistent = sites.filter((s) => s.persistenceDays > longBurningDays).length
     const withTemp = sites.filter((s) => s.tHot !== null)
     const meanT = withTemp.length
       ? Math.round(withTemp.reduce((a, s) => a + (s.tHot ?? 0), 0) / withTemp.length)
       : 0
     return { abnormal, persistent, meanT }
-  }, [sites])
+  }, [sites, longBurningDays])
 
   const classSlices = useMemo(() => {
     const counts = new Map<string, number>()

@@ -42,10 +42,43 @@ interface NrscState {
   setColumns: (ids: ColumnId[]) => void
 }
 
-export const useNrsc = create<NrscState>((set) => ({
-  provenance: DEFAULT_PROVENANCE,
-  columns: DEFAULT_COLUMNS,
-  setProvenance: (key, value) => set((s) => ({ provenance: { ...s.provenance, [key]: value } })),
-  resetProvenance: () => set({ provenance: DEFAULT_PROVENANCE }),
-  setColumns: (columns) => set({ columns }),
-}))
+const KEY = 'te.nrsc'
+
+interface Persisted {
+  provenance: ProvenanceFilters
+  columns: ColumnId[]
+}
+
+const saved = (): Partial<Persisted> => {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) ?? '{}') as Partial<Persisted>
+  } catch {
+    return {}
+  }
+}
+
+export const useNrsc = create<NrscState>((set, get) => {
+  const initial = saved()
+  const persist = () => {
+    const { provenance, columns } = get()
+    localStorage.setItem(KEY, JSON.stringify({ provenance, columns }))
+  }
+
+  return {
+    // What a publisher chose to publish is a policy, not a session mood, so it survives a reload.
+    provenance: { ...DEFAULT_PROVENANCE, ...(initial.provenance ?? {}) },
+    columns: initial.columns ?? DEFAULT_COLUMNS,
+    setProvenance: (key, value) => {
+      set((s) => ({ provenance: { ...s.provenance, [key]: value } }))
+      persist()
+    },
+    resetProvenance: () => {
+      set({ provenance: DEFAULT_PROVENANCE })
+      persist()
+    },
+    setColumns: (columns) => {
+      set({ columns })
+      persist()
+    },
+  }
+})

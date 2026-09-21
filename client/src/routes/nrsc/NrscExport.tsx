@@ -5,7 +5,8 @@ import { Panel } from '@/components/panels/Panel'
 import { StatTile } from '@/components/panels/StatTile'
 import { Button } from '@/components/ui/button'
 import { useNrscData } from './useNrscData'
-import { useNrsc } from '@/store/useNrsc'
+import { DEFAULT_PROVENANCE, useNrsc } from '@/store/useNrsc'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import { logLine } from '@/store/useConsole'
 import {
   EXPORT_FIELDS,
@@ -28,6 +29,8 @@ const stamp = () => new Date().toISOString().slice(0, 10)
 export function NrscExport({ role }: { role: Role }) {
   const { filtered, published } = useNrscData()
   const provenance = useNrsc((s) => s.provenance)
+  // The saved format is the one offered as the primary action.
+  const preferJson = useSettingsFor('nrsc').exportFormat === 'json'
   const [group, setGroup] = useState<FieldGroup | 'all'>('all')
   const [lastFile, setLastFile] = useState<string | null>(null)
 
@@ -35,15 +38,15 @@ export function NrscExport({ role }: { role: Role }) {
   const preview = useMemo(() => published[0], [published])
 
   const filtersOn =
-    provenance.register !== 'all' ||
-    provenance.match !== 'all' ||
-    provenance.dataQuality !== 'all' ||
-    provenance.sentinel1 !== 'any' ||
-    provenance.sentinel2 !== 'any' ||
-    provenance.minSarQuality > 0 ||
-    provenance.minOpticalQuality > 0 ||
-    provenance.maxCloudFraction < 1 ||
-    provenance.maxTemporalGap < 90
+    provenance.register !== DEFAULT_PROVENANCE.register ||
+    provenance.match !== DEFAULT_PROVENANCE.match ||
+    provenance.dataQuality !== DEFAULT_PROVENANCE.dataQuality ||
+    provenance.sentinel1 !== DEFAULT_PROVENANCE.sentinel1 ||
+    provenance.sentinel2 !== DEFAULT_PROVENANCE.sentinel2 ||
+    provenance.minSarQuality > DEFAULT_PROVENANCE.minSarQuality ||
+    provenance.minOpticalQuality > DEFAULT_PROVENANCE.minOpticalQuality ||
+    provenance.maxCloudFraction < DEFAULT_PROVENANCE.maxCloudFraction ||
+    provenance.maxTemporalGap < DEFAULT_PROVENANCE.maxTemporalGap
 
   const exportGeoJson = () => {
     const name = `thermaleye-sites-${stamp()}.geojson`
@@ -95,13 +98,23 @@ export function NrscExport({ role }: { role: Role }) {
         subtitle="GeoJSON reopens in the map; CSV carries the same columns"
         action={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="gap-1.5 rounded-[9px]" onClick={exportCsv}>
-              <FileSpreadsheet size={14} strokeWidth={1.8} />
-              CSV
-            </Button>
-            <Button size="sm" className="gap-1.5 rounded-[9px]" onClick={exportGeoJson}>
+            <Button
+              size="sm"
+              variant={preferJson ? 'default' : 'outline'}
+              className="gap-1.5 rounded-[9px]"
+              onClick={exportGeoJson}
+            >
               <FileJson size={14} strokeWidth={1.8} />
               GeoJSON
+            </Button>
+            <Button
+              size="sm"
+              variant={preferJson ? 'outline' : 'default'}
+              className="gap-1.5 rounded-[9px]"
+              onClick={exportCsv}
+            >
+              <FileSpreadsheet size={14} strokeWidth={1.8} />
+              CSV
             </Button>
           </div>
         }

@@ -15,19 +15,25 @@ import { siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Alert } from '@/lib/types'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
+import { atOrAboveFloor } from '@/lib/severity'
 
 export function CeaAlerts({ role }: { role: Role }) {
+  const settings = useSettingsFor('cea')
   const { filtered, alerts } = useCeaSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
   const [acknowledged, setAcknowledged] = useState<string[]>([])
 
   const rows = useMemo(
-    () => alerts.map((a): Alert => (acknowledged.includes(a.id) ? { ...a, status: 'acknowledged' } : a)),
-    [alerts, acknowledged],
+    () =>
+      alerts
+        .filter((a) => atOrAboveFloor(a.severity, settings.alertMinSeverity))
+        .map((a): Alert => (acknowledged.includes(a.id) ? { ...a, status: 'acknowledged' } : a)),
+    [alerts, acknowledged, settings.alertMinSeverity],
   )
   const site = siteById(selectedSiteId) ?? siteById(rows[0]?.siteId ?? null)
-  const rising = filtered.filter((s) => s.frpSlope > 0.05).length
+  const rising = filtered.filter((s) => s.frpSlope > settings.risingSlope).length
 
   return (
     <div className="flex flex-col gap-4">

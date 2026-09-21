@@ -6,9 +6,15 @@ import type { ThermalSite, UnmappedCandidate } from '@/lib/types'
 /** Mine fires burn for years; waste dumps flare and die. The rule is stated, not assumed. */
 export type FireSubtype = 'coal-seam-like' | 'waste-dump-like' | 'episodic'
 
-export function fireSubtype(site: ThermalSite): FireSubtype {
-  if (site.persistenceDays > 365 && site.nightRatio > 0.35) return 'coal-seam-like'
-  if (site.persistenceDays > 90) return 'waste-dump-like'
+export interface SubtypeConfig {
+  seamPersistDays: number
+  seamNightRatio: number
+  dumpPersistDays: number
+}
+
+export function fireSubtype(site: ThermalSite, cfg: SubtypeConfig): FireSubtype {
+  if (site.persistenceDays > cfg.seamPersistDays && site.nightRatio > cfg.seamNightRatio) return 'coal-seam-like'
+  if (site.persistenceDays > cfg.dumpPersistDays) return 'waste-dump-like'
   return 'episodic'
 }
 

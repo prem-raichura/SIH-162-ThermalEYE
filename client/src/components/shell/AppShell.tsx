@@ -7,7 +7,7 @@ import { Footer } from './Footer'
 import { SplitConsole, useConsoleBoot } from '@/components/console/SplitConsole'
 import { sectionTitle, type Role } from '@/lib/roles'
 import { meta, model } from '@/lib/data'
-import { useSettings } from '@/store/useSettings'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
 import { LAYERS, useLayers, type LayerId } from '@/store/useLayers'
 import { useConsole } from '@/store/useConsole'
@@ -40,9 +40,9 @@ export function AppShell({ role }: { role: Role }) {
   )
   useConsoleBoot(role, boot)
 
-  // Settings defaults are applied once per session, before the first map paints.
-  const defaultWindow = useSettings((s) => s.defaultWindow)
-  const defaultLayers = useSettings((s) => s.defaultLayers)
+  // Saved defaults are a live binding: saving a new default window or layer set on the
+  // settings page moves the map and the filters at once, rather than waiting for a reload.
+  const { defaultWindow, defaultLayers } = useSettingsFor(role.id)
   const setWindow = useFilters((s) => s.setWindow)
   const setVisible = useLayers((s) => s.setVisible)
 
@@ -50,9 +50,7 @@ export function AppShell({ role }: { role: Role }) {
     setWindow(defaultWindow)
     const next = Object.fromEntries(LAYERS.map((l) => [l.id, defaultLayers.includes(l.id)])) as Record<LayerId, boolean>
     setVisible(next)
-    // Defaults are a session-start action, not a live binding to the settings page.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [defaultWindow, defaultLayers, setWindow, setVisible])
 
   // On a narrow screen the console would eat most of the viewport, so it starts folded.
   const setCollapsed = useConsole((s) => s.setCollapsed)

@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SUBTYPE_NOTE, fireSubtype, useIbmSites } from './useIbmData'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
@@ -25,6 +26,7 @@ const SUBTYPE_TONE: Record<string, { bg: string; fg: string }> = {
 /** Section 8 — persistence, recurrence and inter-event time, which is what separates a
  *  burning seam from a truck that was hot once. */
 export function IbmSites({ role }: { role: Role }) {
+  const settings = useSettingsFor('ibm')
   const { filtered, mines, states } = useIbmSites()
   const selectSite = useFilters((s) => s.selectSite)
   const openDetail = useFilters((s) => s.openDetail)
@@ -45,7 +47,7 @@ export function IbmSites({ role }: { role: Role }) {
         meta={[
           { label: 'In view', value: nf(rows.length) },
           { label: 'All mine sites', value: nf(mines.length) },
-          { label: 'Seam-like', value: nf(rows.filter((s) => fireSubtype(s) === 'coal-seam-like').length) },
+          { label: 'Seam-like', value: nf(rows.filter((s) => fireSubtype(s, settings) === 'coal-seam-like').length) },
         ]}
       />
 
@@ -93,7 +95,7 @@ export function IbmSites({ role }: { role: Role }) {
                 </thead>
                 <tbody className="divide-line divide-y">
                   {rows.map((site, i) => {
-                    const subtype = fireSubtype(site)
+                    const subtype = fireSubtype(site, settings)
                     return (
                       <tr
                         key={site.id}

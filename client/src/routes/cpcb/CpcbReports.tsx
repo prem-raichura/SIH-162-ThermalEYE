@@ -13,9 +13,11 @@ import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
 import { istDate, nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /** Section 29 — the evidence behind a prediction, model evidence kept apart from context. */
 export function CpcbReports({ role }: { role: Role }) {
+  const settings = useSettingsFor('cpcb')
   const { filtered } = useCpcbSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -24,8 +26,8 @@ export function CpcbReports({ role }: { role: Role }) {
 
   const site = siteById(selectedSiteId)
   const candidates = useMemo(
-    () => [...filtered].sort((a, b) => b.detectionCount - a.detectionCount).slice(0, 25),
-    [filtered],
+    () => [...filtered].sort((a, b) => b.detectionCount - a.detectionCount).slice(0, settings.reportTopN),
+    [filtered, settings.reportTopN],
   )
 
   return (

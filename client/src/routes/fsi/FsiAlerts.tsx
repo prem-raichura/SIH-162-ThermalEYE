@@ -15,8 +15,11 @@ import { alerts as allAlerts, siteById } from '@/lib/data'
 import { nf } from '@/lib/format'
 import type { Alert } from '@/lib/types'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
+import { atOrAboveFloor } from '@/lib/severity'
 
 export function FsiAlerts({ role }: { role: Role }) {
+  const settings = useSettingsFor('fsi')
   const { filtered } = useFsiSites()
   const selectSite = useFilters((s) => s.selectSite)
   const openDetail = useFilters((s) => s.openDetail)
@@ -28,8 +31,9 @@ export function FsiAlerts({ role }: { role: Role }) {
     () =>
       allAlerts
         .filter((a) => siteIds.has(a.siteId))
+        .filter((a) => atOrAboveFloor(a.severity, settings.alertMinSeverity))
         .map((a): Alert => (acknowledged.includes(a.id) ? { ...a, status: 'acknowledged' } : a)),
-    [siteIds, acknowledged],
+    [siteIds, acknowledged, settings.alertMinSeverity],
   )
 
   const selected = siteById(selectedSiteId)

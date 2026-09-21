@@ -13,9 +13,11 @@ import { logLine } from '@/store/useConsole'
 import { model, siteById } from '@/lib/data'
 import { days, megawatt, nf } from '@/lib/format'
 import type { Role } from '@/lib/roles'
+import { useSettingsFor } from '@/store/useRoleSettings'
 
 /** Section 18 — each station's own long-term thermal profile, which is what deviation means. */
 export function CeaBaselines({ role }: { role: Role }) {
+  const settings = useSettingsFor('cea')
   const { filtered, controls } = useCeaSites()
   const selectSite = useFilters((s) => s.selectSite)
   const selectedSiteId = useFilters((s) => s.selectedSiteId)
@@ -47,7 +49,7 @@ export function CeaBaselines({ role }: { role: Role }) {
         description="What each station normally does, so a deviation can be read as a deviation rather than as a big number."
         meta={[
           { label: 'Stations', value: nf(ranked.length) },
-          { label: 'With history', value: nf(ranked.filter((s) => s.detectionCount > 200).length) },
+          { label: 'With history', value: nf(ranked.filter((s) => s.detectionCount > settings.historyMinDetections).length) },
         ]}
         action={site ? 'Generate report' : undefined}
         onAction={() => {

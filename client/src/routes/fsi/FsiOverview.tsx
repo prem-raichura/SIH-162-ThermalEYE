@@ -9,7 +9,8 @@ import { EmptyState } from '@/components/panels/EmptyState'
 import { SeparationScatter } from '@/components/panels/SeparationScatter'
 import { SiteDetailDrawer } from '@/components/panels/SiteDetailDrawer'
 import { EvidenceReportDialog } from '@/components/panels/EvidenceReportDialog'
-import { DELTA_T_BOUNDARY, useFsiSites } from './useFsiData'
+import { useFsiSites } from './useFsiData'
+import { useSettingsFor } from '@/store/useRoleSettings'
 import { useFilters } from '@/store/useFilters'
 import { logLine } from '@/store/useConsole'
 import { siteById } from '@/lib/data'
@@ -21,6 +22,7 @@ const TABLE_HINT = 'The full event list is on the All Events page.'
 const FSI_LAYERS = ['thermal', 'sites', 'landcover', 'districts'] as const
 
 export function FsiOverview({ role }: { role: Role }) {
+  const settings = useSettingsFor('fsi')
   const navigate = useNavigate()
   const { filtered, industrial, counts } = useFsiSites()
   const openDetail = useFilters((s) => s.openDetail)
@@ -53,7 +55,7 @@ export function FsiOverview({ role }: { role: Role }) {
   )
 
   const separation = (height?: number) => (
-    <SeparationScatter industrial={industrial} vegetation={filtered} boundary={DELTA_T_BOUNDARY} height={height} />
+    <SeparationScatter industrial={industrial} vegetation={filtered} boundary={settings.deltaTBoundary} height={height} />
   )
 
 
