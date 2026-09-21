@@ -17,6 +17,23 @@ createRoot(document.getElementById('root')!).render(
  * between the two. It leaves on a fade rather than a cut, and takes itself out of the DOM
  * afterwards so it can never trap a click or a screen reader.
  */
+/**
+ * A deploy replaces every hashed chunk, but an already-open tab still holds the old index and
+ * asks for filenames that no longer exist. The SPA rewrite answers those with index.html, so
+ * the browser reports a module served as text/html and the navigation dies.
+ *
+ * Vite raises `vite:preloadError` for exactly this. One reload picks up the current build.
+ * The stamp guards against a reload loop if the failure is something else entirely.
+ */
+window.addEventListener('vite:preloadError', (event) => {
+  const key = 'te.reloadedAt'
+  const last = Number(sessionStorage.getItem(key) ?? 0)
+  if (Date.now() - last < 10_000) return
+  event.preventDefault()
+  sessionStorage.setItem(key, String(Date.now()))
+  window.location.reload()
+})
+
 const boot = document.getElementById('boot')
 if (boot) {
   requestAnimationFrame(() =>
