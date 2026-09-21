@@ -26,6 +26,11 @@
         transition: opacity 240ms ease-out;
       }
       #boot[data-leaving='true'] { opacity: 0; }
+      #boot .boot-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
       #boot .boot-mark { position: relative; width: 76px; height: 76px; }
       #boot .boot-ring {
         position: absolute;
@@ -40,10 +45,34 @@
         color: #6e6a5e;
         text-align: center;
       }
+      #boot .boot-fail { display: none; max-width: 42ch; text-align: center; }
+      #boot[data-failed='true'] .boot-ring { animation: none; opacity: 0.35; }
+      #boot[data-failed='true'] .boot-label { display: none; }
+      #boot[data-failed='true'] .boot-fail { display: block; }
+      #boot .boot-fail p {
+        margin: 18px 0 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #6e6a5e;
+      }
+      #boot .boot-fail button {
+        margin-top: 14px;
+        font: inherit;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 12.5px;
+        color: #f6f2e9;
+        background: #26261f;
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 15px;
+        cursor: pointer;
+      }
       @keyframes boot-spin { to { transform: rotate(360deg); } }
       @media (prefers-color-scheme: dark) {
         #boot { background: #191813; }
-        #boot .boot-label { color: #a9a294; }
+        #boot .boot-label, #boot .boot-fail p { color: #a9a294; }
+        #boot .boot-fail button { background: #f0ece1; color: #191813; }
       }
       @media (prefers-reduced-motion: reduce) {
         #boot .boot-ring { animation: none; }
@@ -52,7 +81,7 @@
   </head>
   <body>
     <div id="boot" role="status" aria-live="polite">
-      <div>
+      <div class="boot-inner">
         <div class="boot-mark">
           <svg class="boot-ring" viewBox="0 0 48 48" aria-hidden="true">
             <circle cx="24" cy="24" r="22" fill="none" stroke="#e5ded0" stroke-width="2" />
@@ -63,9 +92,39 @@
                style="position:absolute;left:17px;top:17px" />
         </div>
         <p class="boot-label">Starting ThermalEye</p>
+        <div class="boot-fail">
+          <p>
+            ThermalEye could not finish loading. A page file did not arrive &mdash; usually a stale
+            tab left open while the build changed. Reloading fetches the current one.
+          </p>
+          <button type="button" onclick="location.reload()">Reload the page</button>
+        </div>
       </div>
     </div>
     <div id="root"></div>
+    <!-- If the entry module never runs, the boot screen would spin for ever with nothing to
+         act on. This is deliberately not a module: the module graph is the thing that failed. -->
+    <script>
+      (function () {
+        var boot = document.getElementById('boot')
+        if (!boot) return
+        var fail = function () {
+          if (!boot.isConnected || boot.dataset.failed === 'true') return
+          if (document.getElementById('root').childElementCount > 0) return
+          boot.dataset.failed = 'true'
+        }
+        // A script or stylesheet that 404s reports here, in the capture phase.
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (e.target && e.target !== window && e.target.tagName) fail()
+          },
+          true,
+        )
+        // Everything else — a parse error, a hung import — is caught by the deadline.
+        window.setTimeout(fail, 8000)
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
