@@ -9,19 +9,17 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { sites, unmapped } from '@/lib/data'
-import { ROLE_LIST, rolePath, type Role } from '@/lib/roles'
+import { rolePath, type Role } from '@/lib/roles'
 import { useFilters } from '@/store/useFilters'
-import { useRoleStore } from '@/store/useRole'
 import { logLine } from '@/store/useConsole'
 import { coord } from '@/lib/format'
 
-/** ⌘K search over sites, unmapped candidates, roles and this role's own sections. */
+/** ⌘K search over sites, unmapped candidates and this role's own sections. */
 export function CommandPalette({ role, open, onOpenChange }: { role: Role; open: boolean; onOpenChange: (v: boolean) => void }) {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const selectSite = useFilters((s) => s.selectSite)
   const selectUnmapped = useFilters((s) => s.selectUnmapped)
-  const setRole = useRoleStore((s) => s.setRole)
 
   useEffect(() => {
     if (!open) setQuery('')
@@ -50,7 +48,7 @@ export function CommandPalette({ role, open, onOpenChange }: { role: Role; open:
   const close = () => onOpenChange(false)
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} title="Search" description="Find a site, a section or a role">
+    <CommandDialog open={open} onOpenChange={onOpenChange} title="Search" description="Find a site or a section">
       <CommandInput placeholder="Search sites, states, sections…" value={query} onValueChange={setQuery} />
       <CommandList>
         <CommandEmpty>Nothing matches that. Try a facility name, a state, or a class.</CommandEmpty>
@@ -108,25 +106,6 @@ export function CommandPalette({ role, open, onOpenChange }: { role: Role; open:
             >
               <item.icon size={15} strokeWidth={1.8} />
               <span>{item.label}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-
-        <CommandGroup heading="Switch role">
-          {ROLE_LIST.filter((r) => r.id !== role.id).map((r) => (
-            <CommandItem
-              key={r.id}
-              value={`role ${r.org} ${r.short}`}
-              onSelect={() => {
-                setRole(r.id)
-                navigate(`/${r.id}`)
-                logLine('INFO', `Active role changed to ${r.short}`)
-                close()
-              }}
-            >
-              <r.icon size={15} strokeWidth={1.8} style={{ color: r.accent }} />
-              <span className="flex-1 truncate">{r.org}</span>
-              <span className="text-ink-faint text-xs">{r.short}</span>
             </CommandItem>
           ))}
         </CommandGroup>

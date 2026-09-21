@@ -125,6 +125,18 @@
   outline-color: var(--color-con-text);
 }
 
+/* The login fields wrap their input, so a detached ring around the input reads as a second
+   box inside the first. The wrapper carries the focus state instead: the border firms up and
+   a soft halo sits flush against it, keeping the indicator visible without the doubled edge. */
+.login-field:focus-within {
+  border-color: var(--color-ink-faint);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-ink) 7%, transparent);
+}
+
+.login-field input:focus-visible {
+  outline: none;
+}
+
 @layer base {
   * {
     border-color: var(--color-line);

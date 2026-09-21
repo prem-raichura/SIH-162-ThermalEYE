@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Moon, PanelLeft, Search, Sun } from 'lucide-react'
 import type { Role } from '@/lib/roles'
 import { useTheme } from '@/store/useTheme'
-import { RoleSwitcher } from './RoleSwitcher'
+import { useRoleStore } from '@/store/useRole'
+import { AccountMenu } from './AccountMenu'
 import { CommandPalette } from './CommandPalette'
 
 export function TopBar({
@@ -17,6 +18,7 @@ export function TopBar({
   const [paletteOpen, setPaletteOpen] = useState(false)
   const mode = useTheme((s) => s.mode)
   const toggleTheme = useTheme((s) => s.toggle)
+  const email = useRoleStore((s) => s.email)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -70,7 +72,7 @@ export function TopBar({
         {mode === 'dark' ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
       </button>
 
-      <RoleSwitcher role={role} user="Prem Raichura" />
+      <AccountMenu role={role} email={email ?? ""} />
 
       <CommandPalette role={role} open={paletteOpen} onOpenChange={setPaletteOpen} />
     </header>

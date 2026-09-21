@@ -229,3 +229,13 @@ export function sectionTitle(role: Role, section: string | undefined) {
   const item = role.nav.find((n) => n.path === (section ?? ''))
   return item?.label ?? role.nav[0].label
 }
+
+export const EMAIL_DOMAIN = 'thermaleye.in'
+
+export const roleEmail = (id: RoleId) => `${id}@${EMAIL_DOMAIN}`
+
+/** Every role id doubles as its mailbox, so the address alone decides the view. */
+export function roleFromEmail(email: string | null | undefined): RoleId | null {
+  const [local, domain] = (email ?? '').trim().toLowerCase().split('@')
+  return domain === EMAIL_DOMAIN && isRoleId(local) ? local : null
+}

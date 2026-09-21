@@ -1,15 +1,43 @@
-import { useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { Brand } from '@/components/shell/Brand'
-import { ROLE_LIST } from '@/lib/roles'
-import { useRoleStore } from '@/store/useRole'
+import { Button } from '@/components/ui/button'
+import { ROLE_LIST, roleEmail } from '@/lib/roles'
+import { DEMO_PASSWORD, useRoleStore } from '@/store/useRole'
 import { logLine } from '@/store/useConsole'
 import { meta, model } from '@/lib/data'
 import { nf } from '@/lib/format'
 
+const FIELD =
+  'login-field border-line bg-paper flex items-center gap-2.5 rounded-[10px] border px-3 py-2.5 transition-[color,background-color,border-color,box-shadow]'
+const LABEL = 'text-ink-faint block text-[10px] tracking-[0.1em] uppercase'
+
 export function LoginPage() {
   const navigate = useNavigate()
-  const setRole = useRoleStore((s) => s.setRole)
+  const signIn = useRoleStore((s) => s.signIn)
+  const signedInAs = useRoleStore((s) => s.roleId)
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [reveal, setReveal] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  if (signedInAs) return <Navigate to={`/${signedInAs}`} replace />
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const result = signIn(email, password)
+    if (!result.ok) {
+      setError(result.error)
+      return
+    }
+    logLine('INFO', `Logged in as ${result.roleId.toUpperCase()}`)
+    navigate(`/${result.roleId}`)
+  }
+
+  const badEmail = error === 'No ThermalEye account for that address.'
+  const badPassword = error === 'Incorrect password.'
 
   const stats: [string, string][] = [
     ['FIRMS detections', nf(meta.realSources.firmsDetections)],
@@ -49,47 +77,116 @@ export function LoginPage() {
         </section>
 
         <section className="bg-card border-line rounded-[18px] border p-2">
-          <div className="px-4 pt-4 pb-3">
-            <h2 className="text-[15px] font-semibold">Choose a view</h2>
+          <form onSubmit={submit} className="px-4 pt-4 pb-1">
+            <h2 className="text-[15px] font-semibold">Log in</h2>
             <p className="text-ink-soft mt-1 text-[13px]">
-              Each organisation sees the part of the system it owns. Pick one to continue.
+              Use your ThermalEye organisation account. Your address decides the view you land on.
             </p>
-          </div>
 
-          <ul>
-            {ROLE_LIST.map((role) => (
-              <li key={role.id}>
+            <label className="mt-6 block">
+              <span className={LABEL}>Email address</span>
+              <span className={`${FIELD} mt-1.5`}>
+                <Mail size={16} strokeWidth={1.8} className="text-ink-faint shrink-0" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setError(null)
+                  }}
+                  autoComplete="username"
+                  autoFocus
+                  spellCheck={false}
+                  placeholder="cpcb@thermaleye.in"
+                  aria-invalid={badEmail}
+                  className="text-ink placeholder:text-ink-faint/70 w-full bg-transparent text-[14px] outline-none"
+                />
+              </span>
+            </label>
+
+            <label className="mt-4 block">
+              <span className={LABEL}>Password</span>
+              <span className={`${FIELD} mt-1.5`}>
+                <Lock size={16} strokeWidth={1.8} className="text-ink-faint shrink-0" />
+                <input
+                  type={reveal ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setError(null)
+                  }}
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  aria-invalid={badPassword}
+                  className="text-ink placeholder:text-ink-faint/70 w-full bg-transparent text-[14px] outline-none"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setReveal((v) => !v)}
+                  aria-label={reveal ? 'Hide password' : 'Show password'}
+                  className="text-ink-faint hover:text-ink-soft -mr-1 shrink-0 rounded p-1 transition-colors"
+                >
+                  {reveal ? <EyeOff size={16} strokeWidth={1.8} /> : <Eye size={16} strokeWidth={1.8} />}
+                </button>
+              </span>
+            </label>
+
+            {error && (
+              <p role="alert" className="text-terracotta mt-3 text-[12.5px]">
+                {error}
+              </p>
+            )}
+
+            <Button type="submit" className="mt-6 w-full">
+              Log in
+              <ArrowRight size={16} strokeWidth={1.8} />
+            </Button>
+          </form>
+
+          <div className="border-line mt-4 border-t px-4 pt-3.5 pb-4">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-ink-faint text-[10px] tracking-[0.1em] uppercase">Demo accounts</span>
+              <span className="text-ink-soft text-[11.5px]">
+                Password for all:{' '}
                 <button
                   type="button"
                   onClick={() => {
-                    setRole(role.id)
-                    logLine('INFO', `Signed in as ${role.short}`)
-                    navigate(`/${role.id}`)
+                    setPassword(DEMO_PASSWORD)
+                    setError(null)
                   }}
-                  className="hover:bg-paper-deep group flex w-full items-center gap-3.5 rounded-[12px] px-4 py-3 text-left transition-colors"
+                  className="text-ink hover:bg-paper-deep rounded px-1 py-0.5 font-mono text-[11.5px] transition-colors"
                 >
-                  <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px]"
-                    style={{ backgroundColor: role.accentDim, color: role.accent }}
-                  >
-                    <role.icon size={18} strokeWidth={1.8} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-medium">{role.org}</span>
-                    <span className="text-ink-soft block truncate text-[12.5px]">{role.remit}</span>
-                  </span>
-                  <ArrowRight
-                    size={16}
-                    className="text-ink-faint shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                  />
+                  {DEMO_PASSWORD}
                 </button>
-              </li>
-            ))}
-          </ul>
+              </span>
+            </div>
 
-          <p className="text-ink-faint border-line mt-2 border-t px-4 py-3 text-[11.5px]">
-            Demo build. Roles are not authenticated and every figure is pre-computed from the collected dataset.
-          </p>
+            <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-0.5 sm:grid-cols-2">
+              {ROLE_LIST.map((r) => (
+                <li key={r.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail(roleEmail(r.id))
+                      setPassword(DEMO_PASSWORD)
+                      setError(null)
+                    }}
+                    title={r.org}
+                    className="hover:bg-paper-deep flex w-full items-center gap-2 rounded-[6px] px-1.5 py-1 text-left transition-colors"
+                  >
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: r.accent }} />
+                    <span className="text-ink-soft truncate font-mono text-[11.5px]">{roleEmail(r.id)}</span>
+                    <span className="text-ink-faint ml-auto shrink-0 text-[10.5px]">{r.short}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-ink-faint mt-2.5 px-1.5 text-[11px]">
+              Demo build. Pick an address to fill the form; every figure is pre-computed from the collected dataset.
+            </p>
+          </div>
         </section>
       </div>
     </div>

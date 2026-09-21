@@ -68,20 +68,21 @@ demo is the same on every machine and in every run.
 ## 🧭 The experience
 
 ```
-  Login  ──►  pick a role  ──►  GIS console  ──►  drill into records
-   │             │                  │                     │
-   │             │                  │                     └─ tables, charts, evidence reports
-   │             │                  └─ full-screen map, floating docks, live filters
-   │             └─ eight organisations, each sees only its own remit
-   └─ headline numbers + what the system actually claims
+  Log in   ──►  your organisation's console  ──►  drill into records
+   │               │                                    │
+   │               │                                    └─ tables, charts, evidence reports
+   │               └─ full-bleed map, floating docks, live filters
+   └─ headline numbers + the address that decides the view
 ```
 
 ### The landing page
 
-Not a login form — a **statement of the problem** and the four numbers that frame it, then eight
-role cards. Each card carries that organisation's one-line remit, so the choice is informed.
+Half **statement of the problem** — the four numbers that frame it — and half login card. The
+address is the session: `cpcb@thermaleye.in` opens the CPCB console, `ndma@thermaleye.in` the NDMA
+one, and so on for all eight organisations. The password is shared across the demo accounts, and
+the signed-in role is pinned — a CPCB session cannot open `/admin` by editing the URL.
 
-> *Demo build. Roles are not authenticated and every figure is pre-computed from the collected dataset.*
+> *Demo build. Credentials are a view gate, not real authentication, and every figure is pre-computed from the collected dataset.*
 
 ### Every role opens on a map console
 
