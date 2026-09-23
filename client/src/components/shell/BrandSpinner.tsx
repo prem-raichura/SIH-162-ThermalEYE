@@ -8,10 +8,10 @@ export type SpinnerSize = keyof typeof SIZE
 /**
  * The mark, waiting.
  *
- * The ring spins, not the mark. ThermalEye's aperture is three concentric circles, so it is
- * perfectly rotationally symmetric — turning it would produce no visible motion at all, and
- * distorting it to fake some would mean shipping a second version of the logo. An arc
- * sweeping the outside reads as motion and leaves the identity alone.
+ * The ring spins, not the mark. The mark is a badge with the name set around its rim, so
+ * rotating it would drag the wordmark upside down, and distorting it to fake motion would
+ * mean shipping a second version of the logo. An arc sweeping the outside reads as motion
+ * and leaves the identity alone.
  *
  * The glow outside the arc is tinted from the role accent, so the loader arrives in the
  * colour of whichever desk is open.

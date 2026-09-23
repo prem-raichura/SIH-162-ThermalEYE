@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils'
 
 /**
- * The mark: one half the observed world, the other half the retrieval and what it is looking at.
- * Used on the rail, the login page and inside the loader.
+ * The mark: a satellite over the world, its beam on a hot spot, a plant burning below it —
+ * the whole chain the product watches, on one badge. Used on the rail, the login page and
+ * inside the loader.
  *
  * Served at 256px and drawn at 32-44, so it stays sharp on a 3x display without shipping the
  * full-resolution original.
